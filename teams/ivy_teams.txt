@@ -1,0 +1,8 @@
+yale
+harvard
+princeton
+brown
+pennsylvania
+cornell
+columbia
+dartmouth

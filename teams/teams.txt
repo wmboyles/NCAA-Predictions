@@ -1,0 +1,353 @@
+michigan state
+purdue
+michigan
+wisconsin
+maryland
+iowa
+minnesota
+ohio state
+indiana
+rutgers
+penn state
+illinois
+nebraska
+northwestern
+texas tech
+kansas state
+kansas
+baylor
+iowa state
+texas
+texas christian
+oklahoma
+oklahoma state
+west virginia
+virginia
+north carolina
+duke
+florida state
+virginia tech
+louisville
+syracuse
+north carolina state
+clemson
+georgia tech
+boston college
+miami fl
+wake forest
+notre dame
+pittsburgh
+louisiana state
+tennessee
+kentucky
+auburn
+south carolina
+mississippi state
+mississippi
+florida
+alabama
+arkansas
+texas am
+missouri
+georgia
+vanderbilt
+villanova
+marquette
+seton hall
+georgetown
+creighton
+xavier
+st johns ny
+providence
+depaul
+butler
+washington
+arizona state
+utah
+oregon
+colorado
+oregon state
+ucla
+arizona
+southern california
+stanford
+washington state
+california
+houston
+cincinnati
+central florida
+temple
+memphis
+wichita state
+south florida
+tulsa
+connecticut
+southern methodist
+east carolina
+tulane
+gonzaga
+saint marys ca
+brigham young
+san francisco
+loyola marymount
+santa clara
+san diego
+pepperdine
+pacific
+portland
+buffalo
+bowling green state
+kent state
+akron
+miami oh
+ohio
+toledo
+central michigan
+eastern michigan
+northern illinois
+ball state
+western michigan
+nevada
+utah state
+fresno state
+san diego state
+nevada las vegas
+air force
+new mexico
+boise state
+colorado state
+wyoming
+san jose state
+virginia commonwealth
+davidson
+dayton
+st bonaventure
+george mason
+saint louis
+duquesne
+rhode island
+la salle
+saint josephs
+richmond
+massachusetts
+george washington
+fordham
+drake
+loyola il
+southern illinois
+missouri state
+bradley
+illinois state
+northern iowa
+indiana state
+valparaiso
+evansville
+wofford
+north carolina greensboro
+furman
+east tennessee state
+chattanooga
+samford
+mercer
+citadel
+virginia military institute
+western carolina
+yale
+harvard
+princeton
+brown
+pennsylvania
+cornell
+columbia
+dartmouth
+georgia state
+texas state
+georgia southern
+texas arlington
+louisiana lafayette
+louisiana monroe
+coastal carolina
+south alabama
+arkansas state
+appalachian state
+troy
+arkansas little rock
+old dominion
+marshall
+southern mississippi
+western kentucky
+texas san antonio
+florida international
+alabama birmingham
+louisiana tech
+north texas
+florida atlantic
+rice
+middle tennessee
+charlotte
+texas el paso
+new mexico state
+utah valley
+grand canyon
+texas pan american
+cal state bakersfield
+california baptist
+seattle
+missouri kansas city
+chicago state
+northern kentucky
+wright state
+oakland
+green bay
+illinois chicago
+iupui
+youngstown state
+detroit mercy
+cleveland state
+milwaukee
+hofstra
+northeastern
+college of charleston
+william mary
+delaware
+drexel
+elon
+james madison
+towson
+north carolina wilmington
+california irvine
+california santa barbara
+cal state fullerton
+hawaii
+long-beach-state
+cal state northridge
+california davis
+california riverside
+cal poly
+liberty
+lipscomb
+north florida
+florida gulf coast
+njit
+north alabama
+jacksonville
+stetson
+kennesaw state
+south dakota state
+nebraska omaha
+ipfw
+north dakota state
+south dakota
+oral roberts
+north dakota
+western illinois
+denver
+colgate
+bucknell
+lehigh
+american
+army
+navy
+boston university
+loyola md
+lafayette
+holy cross
+murray state
+belmont
+jacksonville state
+austin peay
+morehead state
+eastern illinois
+eastern kentucky
+tennessee martin
+southern illinois edwardsville
+tennessee state
+southeast missouri state
+tennessee tech
+radford
+campbell
+gardner webb
+winthrop
+presbyterian
+charleston southern
+high point
+hampton
+longwood
+north carolina asheville
+south carolina upstate
+vermont
+stony brook
+maryland baltimore county
+hartford
+massachusetts lowell
+albany ny
+binghamton
+new hampshire
+maine
+montana
+northern colorado
+eastern washington
+weber state
+portland state
+montana state
+southern utah
+sacramento state
+northern arizona
+idaho state
+idaho
+iona
+quinnipiac
+rider
+siena
+canisius
+monmouth
+manhattan
+marist
+niagara
+saint peters
+fairfield
+sam houston state
+abilene christian
+lamar
+new orleans
+southeastern louisiana
+texas am corpus christi
+central arkansas
+houston baptist
+stephen f austin
+nicholls state
+northwestern state
+mcneese state
+incarnate word
+fairleigh dickinson
+saint francis pa
+robert morris
+sacred heart
+st francis ny
+long island university
+wagner
+bryant
+mount st marys
+central connecticut state
+prairie view
+texas southern
+grambling
+arkansas pine bluff
+jackson state
+alabama state
+alcorn state
+southern
+mississippi valley state
+alabama am
+norfolk state
+north carolina at
+north carolina central
+howard
+bethune cookman
+florida am
+savannah state
+coppin state
+south carolina state
+maryland eastern shore
+morgan state
+delaware state
