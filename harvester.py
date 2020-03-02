@@ -63,5 +63,7 @@ def harvest(teams_file="./teams/teams.txt", year=2019):
     print("Combining gamelogs")
     cleaner.combine_summaries(year, teams_file)
 
-harvest(year=2016)
-harvest(year=2017)
+harvest(year=2019)
+harvest(year=2020)
+#for i in range(2016,2021):
+#    harvest(year=i)

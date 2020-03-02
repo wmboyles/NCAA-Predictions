@@ -8,3 +8,4 @@ wagner
 bryant
 mount st marys
 central connecticut state
+merrimack
