@@ -37,23 +37,23 @@ Some examples of things SportsReference does their URLs:
 import scraper
 import cleaner
 
-"""Scrapes, cleans, and serializes data given a list of properly-formatted
-teams in a given file for a given year.
+def harvest(year, teams_file="./teams/teams.txt"):
+    """Scrapes, cleans, and serializes data given a list of properly-formatted
+    teams in a given file for a given year.
 
-If a team on the list cannot be found for a given year (likely it's not D1)
-    North Alabama, pre-2019
-    Savannah State, post-2019
-the program will print an message containing "WARNING" several times throughout
-the execution.
-The program will not print any error message if a team is "missing
+    If a team on the list cannot be found for a given year (likely it's not D1)
+        North Alabama, pre-2019
+        Savannah State, post-2019
+    the program will print an message containing "WARNING" several times throughout
+    the execution.
+    The program will not print any error message if a team is "missing
 
-For all 350+ D1 teams, this process takes about 2.5 minutes, with more than 95%
-of that time coming from the web-scraping part. If this function seems to be
-taking much longer on the scraping part, hitting Crtl+C on the keyboard, which
-will kill a thread of execution hanging on web input, should resume the program.
-After hitting Ctrl+C, you'll likely see a "WARNING" message appear.
-"""
-def harvest(teams_file="./teams/teams.txt", year=2019):
+    For all 350+ D1 teams, this process takes about 2.5 minutes, with more than 95%
+    of that time coming from the web-scraping part. If this function seems to be
+    taking much longer on the scraping part, hitting Crtl+C on the keyboard, which
+    will kill a thread of execution hanging on web input, should resume the program.
+    After hitting Ctrl+C, you'll likely see a "WARNING" message appear.
+    """
     print("Scraping gamelogs")
     scraper.get_team_files(year, teams_file)
     
@@ -62,8 +62,3 @@ def harvest(teams_file="./teams/teams.txt", year=2019):
     
     print("Combining gamelogs")
     cleaner.combine_summaries(year, teams_file)
-
-harvest(year=2019)
-harvest(year=2020)
-#for i in range(2016,2021):
-#    harvest(year=i)
