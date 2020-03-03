@@ -1,6 +1,8 @@
 import numpy as np
 import pickle
 import os
+from math import sqrt
+from scipy.stats import norm
 
 import harvester
 
@@ -145,14 +147,41 @@ def rank(year, alpha=.85, iters=3500, print_rankings=False, plot_rankings=False,
     # TODO: Serialize results as dict?
     if serialize_results:
         # Make the year folder
-        outfile = "./predictions/"+str(year)+"/_rankings.p"
-        os.makedirs(os.path.dirname(outfile), exist_ok=True)
-        pickle.dump(sorted_pairs, open(outfile, 'wb'))
+        outfile1 = "./predictions/"+str(year)+"_rankings.p"
+        outfile2 = "./predictions/"+str(year)+"_vector.p"
+        os.makedirs(os.path.dirname(outfile1), exist_ok=True)
+
+        serial = dict()
+        for team in teams: serial.setdefault(team, 0)
+        for item in sorted_pairs: serial[item[1]] = item[0]
+
+        pickle.dump(serial, open(outfile1, 'wb'))
+        pickle.dump(vec, open(outfile2, 'wb'))
 
     # Plot graph of rankings if specified
     if plot_rankings:
-        plt.plot(sorted(vec))
+        s = sorted(vec)
+        bins=np.arange(0.0, 3.5, 0.125)
+        hist,bins = np.histogram(s, bins=bins)
+        plt.hist(bins[:-1], bins, weights=hist)
         plt.show()
+
+def compare_teams(year, teamA, teamB, print_out=False):
+    rankings = pickle.load(open("./predictions/"+str(year)+"_rankings.p", 'rb'))
+    vec = pickle.load(open("./predictions/"+str(year)+"_vector.p", 'rb'))
+
+    # I know that stats says about variance, but this seems to give better results
+    # Especially for upper-tier teams (quad 2+)
+    K = (rankings[teamA]-rankings[teamB]) / (np.std(vec)/sqrt(2))
+
+    A_beats_B = norm.cdf(K) * 100
+
+    if print_out:
+        if A_beats_B < 50: print(teamB, "beats", teamA, "with confidence", 100-A_beats_B)
+        else: print(teamA, "beats", teamB, "with confidence", A_beats_B)
+
+    return A_beats_B
+
 
 def simulate_tourney(year):
     return
@@ -163,5 +192,6 @@ def simulate_tourney(year):
     # Use seeding and quadrant info to arrange teams that will play each other next to each other
     # Simulate tournament in rounds, printing out predicted results and (confidence?)
 
-yr = int(input("Year: "))
-rank(year=yr, print_rankings=True, plot_rankings=True, serialize_results=True)
+#yr = int(input("Year: "))
+#rank(year=yr, print_rankings=True, plot_rankings=True, serialize_results=True)
+compare_teams(2020, 'north-carolina', 'north-carolina-state', True)
