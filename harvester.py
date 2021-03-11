@@ -49,7 +49,7 @@ def harvest(year, teams_file="./teams/teams.txt"):
         Savannah State, post-2019
     the program will print an message containing "WARNING" several times throughout
     the execution.
-    The program will not print any error message if a team is "missing
+    The program will not print any error message if a team is "missing"
 
     For all 350+ D1 teams, this process takes about 2.5 minutes, with more than 95%
     of that time coming from the web-scraping part. If this function seems to be
