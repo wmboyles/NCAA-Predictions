@@ -1,4 +1,5 @@
-"""This script will run a scraper program to get gamelog data from 
+"""
+This script will run a scraper program to get gamelog data from 
 SportsReference.com for all teams listed in a file containing the formatted
 names of Division I NCAA Basketball teams for a given year.
 
@@ -37,8 +38,10 @@ Some examples of things SportsReference does their URLs:
 import scraper
 import cleaner
 
+
 def harvest(year, teams_file="./teams/teams.txt"):
-    """Scrapes, cleans, and serializes data given a list of properly-formatted
+    """
+    Scrapes, cleans, and serializes data given a list of properly-formatted
     teams in a given file for a given year.
 
     If a team on the list cannot be found for a given year (likely it's not D1)
@@ -54,11 +57,12 @@ def harvest(year, teams_file="./teams/teams.txt"):
     will kill a thread of execution hanging on web input, should resume the program.
     After hitting Ctrl+C, you'll likely see a "WARNING" message appear.
     """
+
     print("Scraping gamelogs")
     scraper.get_team_files(year, teams_file)
-    
+
     print("Summarizing gamelogs")
     cleaner.summarize_team_files(year, teams_file)
-    
+
     print("Combining gamelogs")
     cleaner.combine_summaries(year, teams_file)
