@@ -2,7 +2,7 @@ import numpy as np
 import pickle
 import os
 from math import sqrt
-from scipy.stats import norm
+from scipy.stats import chi2
 
 import harvester
 
@@ -61,7 +61,7 @@ class GameWeights(Enum):
 def rank(
     year,
     alpha=0.85,
-    iters=3500,
+    iters=3501,
     print_rankings=False,
     plot_rankings=False,
     serialize_results=True,
@@ -204,19 +204,49 @@ def rank(
 
 
 def compare_teams(
-    teamA: str, teamB: str, rankings: dict, vec: dict, print_out: bool = False
+    teamA: str,
+    teamB: str,
+    rankA: float,
+    rankB: float,
+    df: float,
+    min_vec: float,
+    max_vec: float,
+    print_out: bool = False,
 ):
-    K = (rankings[teamA] - rankings[teamB]) / (np.std(vec) / sqrt(2))
+    """
+    Compare two teams from the same year.
 
-    A_beats_B = norm.cdf(K)
+    teamA: str
+        Name of first team to compare
+    teamB: str
+        Name of second team to compare
+    rankA: float
+        PageRank score of first team to compare
+    rankB: float
+        PageRank score of second team to compare
+    df: float
+        Degrees of freedom determined by chi squared model of all teams from year
+    min_vec: float
+        The minimum PageRank score of all teams from year
+    max_vec: float
+        The maximum PageRank score of all teams from year
+    print_out: bool
+        Prints "[Winning Team] beats [Losing Team]: [Confidence Level]" if true.
+        Defaults to false.
+    """
 
-    if print_out:
-        if A_beats_B >= 0.5:
-            print(teamA, "beats", teamB, "with confidence", A_beats_B)
-        else:
-            print(teamB, "beats", teamA, "with confidence", 1 - A_beats_B)
+    diff = (chi2.cdf(max_vec, df=df) - chi2.cdf(min_vec, df=df)) / sqrt(2)
+    a, b = chi2.cdf(rankA, df=df), chi2.cdf(rankB, df=df)
+    prob = min(abs(a - b) / diff + 0.5, 0.999)
 
-    return A_beats_B
+    if rankA >= rankB:
+        if print_out:
+            print(f"{teamA} beats {teamB}: {prob}")
+        return prob
+    else:
+        if print_out:
+            print(f"{teamB} beats {teamA}: {prob}")
+        return 1 - prob
 
 
 def build_tourney(rankings: list) -> list:
@@ -256,6 +286,9 @@ def simulate_tourney(year: int, tourney: list) -> list:
     rankings = pickle.load(open("./predictions/" + str(year) + "_rankings.p", "rb"))
     vec = pickle.load(open("./predictions/" + str(year) + "_vector.p", "rb"))
 
+    df = chi2.fit(vec)[0]
+    min_vec, max_vec = min(vec)[0], max(vec)[0]
+
     rounds = [tourney]
     while len(tourney) > 1:
         print(tourney)
@@ -263,10 +296,16 @@ def simulate_tourney(year: int, tourney: list) -> list:
 
         new_tourney = []
         for i in range(0, len(tourney), 2):
+            # team name, seed in bracket, model's probability that they advance to current position
             teamA, seedA, prA = tourney[i]
-            teamB, seedB, prB = tourney[i + 1]
+            rankA = rankings[teamA]
 
-            A_beats_B = compare_teams(teamA, teamB, rankings, vec, True)
+            teamB, seedB, prB = tourney[i + 1]
+            rankB = rankings[teamB]
+
+            A_beats_B = compare_teams(
+                teamA, teamB, rankA, rankB, df, min_vec, max_vec, print_out=True
+            )
             if A_beats_B >= 0.5:
                 new_tourney.append((teamA, seedA, A_beats_B * prA))
             else:
@@ -291,9 +330,8 @@ def virtual_tourney(year: int) -> list:
     SEED_COUNT = NUM_TEAMS // NUM_SEEDS
 
     try:
-        file = open(f"./predictions/{year}_rankings.p", "rb")
         rankings = sorted(
-            pickle.load(file).items(),
+            pickle.load(open(f"./predictions/{year}_rankings.p", "rb")).items(),
             key=lambda x: -x[1],
         )[:NUM_TEAMS]
 
@@ -314,4 +352,5 @@ def virtual_tourney(year: int) -> list:
         return virtual_tourney(year)
 
 
-virtual_tourney(2021)
+year = 2021
+virtual_tourney(year)
