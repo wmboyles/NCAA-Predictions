@@ -261,6 +261,7 @@ def summarize_team_files(year=2019, teamFile="./teams/teams.txt"):
 
     with open(teamFile, "r") as teams:
         for team in teams:
+            # Don't include last character b/c it's a \n
             fmt_team = "-".join(team[:-1].split(" "))
             print("Summarizing", fmt_team, year)
 
