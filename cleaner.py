@@ -214,11 +214,11 @@ def summarize_team_file(year, dashed_team_name):
                     if A_FTA == 0:
                         A_FTR = 0
                     else:
-                        A_FTR = A_FT / A_FTA
+                        A_FTR = A_FT / A_FGA
                     if B_FTA == 0:
                         B_FTR = 0
                     else:
-                        B_FTR = B_FT / B_FTA
+                        B_FTR = B_FT / B_FGA
 
                     new_row = [
                         A,

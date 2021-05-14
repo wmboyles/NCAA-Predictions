@@ -46,7 +46,7 @@ class GameValues(Enum):
 
 class GameWeights(Enum):
     """
-    Items in this enum are the weights of a team winning  game and the
+    Items in this enum are the weights of a team winning game and the
     "four factors":
         Effective field goal percentage
         Turnover percentage
@@ -55,16 +55,17 @@ class GameWeights(Enum):
     These weights can be changed to change the importance of these factors in each game.
     """
 
-    WEIGHTS = [10.0, 4.0, 2.5, 2.0, 1.75]
+    WEIGHTS = [50, 13.3333, 6.6666, 8.3333, 5]
 
 
 def rank(
     year,
     alpha=0.85,
-    iters=3501,
+    iters=3500,
     print_rankings=False,
     plot_rankings=False,
     serialize_results=True,
+    first_year=True,
 ):
     """
     Ranks all Division I NCAA Basketball teams in a given year using PageRank.
@@ -117,7 +118,13 @@ def rank(
     num_teams = len(teams)
 
     # Create PageRank matrix and initial vector
-    mat, vec = np.zeros((num_teams, num_teams)), np.ones((num_teams, 1))
+    if first_year:
+        vec = np.ones((num_teams, 1))
+    else:
+        vec = rank(year - 1, alpha - 0.1, serialize_results=False, first_year=True)
+
+    num_teams = max(num_teams, len(vec))
+    mat = np.zeros((num_teams, num_teams))
     for game in total_summary:
         # We only want to count games where both teams are D1 (in teams list)
         # We choose to only look at games where the first team won so we don't double-count games
@@ -137,9 +144,9 @@ def rank(
                 away_pr_score += GameWeights.WEIGHTS.value[1]
 
             # Turnover percentage
-            if game[GameValues.HOME_TOVp.value] > game[GameValues.AWAY_TOVp.value]:
+            if game[GameValues.HOME_TOVp.value] < game[GameValues.AWAY_TOVp.value]:
                 home_pr_score += GameWeights.WEIGHTS.value[2]
-            elif game[GameValues.AWAY_TOVp.value] > game[GameValues.HOME_TOVp.value]:
+            elif game[GameValues.AWAY_TOVp.value] < game[GameValues.HOME_TOVp.value]:
                 away_pr_score += GameWeights.WEIGHTS.value[2]
 
             # Offensive rebound percentage
@@ -181,8 +188,8 @@ def rank(
     # TODO: Serialize results as dict?
     if serialize_results:
         # Make the year folder
-        outfile1 = "./predictions/" + str(year) + "_rankings.p"
-        outfile2 = "./predictions/" + str(year) + "_vector.p"
+        outfile1 = f"./predictions/{year}_rankings.p"
+        outfile2 = f"./predictions/{year}_vector.p"
         os.makedirs(os.path.dirname(outfile1), exist_ok=True)
 
         serial = dict()
@@ -202,12 +209,16 @@ def rank(
         plt.hist(bins[:-1], bins, weights=hist)
         plt.show()
 
+    return vec
+
 
 def compare_teams(
     teamA: str,
     teamB: str,
     rankA: float,
     rankB: float,
+    seedA: int,
+    seedB: int,
     df: float,
     min_vec: float,
     max_vec: float,
@@ -241,11 +252,11 @@ def compare_teams(
 
     if rankA >= rankB:
         if print_out:
-            print(f"{teamA} beats {teamB}: {prob}")
+            print(f"{teamA} ({seedA}) beats {teamB} ({seedB}): {prob}")
         return prob
     else:
         if print_out:
-            print(f"{teamB} beats {teamA}: {prob}")
+            print(f"{teamB} ({seedB}) beats {teamA} ({seedA}): {prob}")
         return 1 - prob
 
 
@@ -292,7 +303,7 @@ def simulate_tourney(year: int, tourney: list) -> list:
     rounds = [tourney]
     while len(tourney) > 1:
         print(tourney)
-        print()
+        print("--------------------------------------------------")
 
         new_tourney = []
         for i in range(0, len(tourney), 2):
@@ -304,12 +315,25 @@ def simulate_tourney(year: int, tourney: list) -> list:
             rankB = rankings[teamB]
 
             A_beats_B = compare_teams(
-                teamA, teamB, rankA, rankB, df, min_vec, max_vec, print_out=True
+                teamA,
+                teamB,
+                rankA,
+                rankB,
+                seedA,
+                seedB,
+                df,
+                min_vec,
+                max_vec,
+                print_out=True,
             )
             if A_beats_B >= 0.5:
                 new_tourney.append((teamA, seedA, A_beats_B * prA))
+                if seedA > seedB:
+                    print(f"\t{seedA} {seedB} UPSET")
             else:
                 new_tourney.append((teamB, seedB, (1 - A_beats_B) * prB))
+                if seedB > seedA:
+                    print(f"\t{seedB} {seedA} UPSET")
 
         rounds.append(new_tourney)
         tourney = new_tourney
@@ -353,4 +377,73 @@ def virtual_tourney(year: int) -> list:
 
 
 year = 2021
-virtual_tourney(year)
+teams = [
+    "gonzaga",
+    # "norfolk-state",
+    # "oklahoma",
+    # "missouri",
+    "creighton",
+    # "california-santa-barbara",
+    # "virginia",
+    # "ohio",
+    "southern-california",
+    # "drake",
+    # "kansas",
+    # "eastern-washington",
+    "oregon",
+    # "virginia-commonwealth",
+    # "iowa",
+    # "grand-canyon",
+    "michigan",
+    # "texas-southern",
+    # "louisiana-state",
+    # "st-bonaventure",
+    # "colorado",
+    # "georgetown",
+    "florida-state",
+    # "north-carolina-greensboro",
+    # "brigham-young",
+    "ucla",
+    # "texas",
+    # "abilene-christian",
+    # "connecticut",
+    # "maryland",
+    "alabama",
+    # "iona",
+    "baylor",
+    # "hartford",
+    # "north-carolina",
+    # "wisconsin",
+    "villanova",
+    # "winthrop",
+    # "purdue",
+    # "north-texas",
+    # "texas-tech",
+    # "utah-state",
+    "arkansas",
+    # "colgate",
+    # "florida",
+    # "virginia-tech",
+    # "ohio-state",
+    "oral-roberts",
+    # "illinois",
+    # "drexel",
+    "loyola-il",
+    # "georgia-tech",
+    # "tennessee",
+    "oregon-state",
+    # "oklahoma-state",
+    # "liberty",
+    # "san-diego-state",
+    "syracuse",
+    # "west-virginia",
+    # "morehead-state",
+    # "clemson",
+    # "rutgers",
+    "houston",
+    # "cleveland-state",
+]
+tourney = [(team, 1, 1) for team in teams]
+
+rank(year, iters=10000)
+simulate_tourney(year, tourney)
