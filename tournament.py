@@ -1,8 +1,14 @@
-from collections import namedtuple
 from typing import Iterator
+from dataclasses import dataclass
+
+from team_comparators import TeamComparator
 
 
-TeamSeeding = namedtuple("TeamSeeding", ["name", "seed", "probability"])
+@dataclass
+class TeamSeeding:
+    name: str
+    seed: int
+    probability: float
 
 
 class Tournament:
@@ -16,13 +22,22 @@ class Tournament:
         """
         Build tournament by entering teams like they would appear in the bracket.
 
+        If the type of the objects in the list is not TeamSeeding, it will be converted to one.
+        Othwerwise, the list will be used as is.
+
         NOTE: For the NCAA tournament, the seed ordering you enter should be:
             [1, 16, 8, 9, 4, 13, 5, 12, 2, 15, 7, 10, 3, 14, 6, 11]
         The NCAA printable bracket ordering is:
             [1, 16, 8, 9, 5, 12, 4, 13, 6, 11, 3, 14, 7, 10, 2, 15]
         This is different. The NCAA ordering is dumb.
         """
-        self.__build_tourney(teams)
+        if len(teams) == 0:
+            raise ValueError("Must have at least one team")
+
+        if type(teams[0]) is TeamSeeding:
+            self.tourney: list[TeamSeeding] = teams
+        else:
+            self.__build_tourney(teams)
 
     def __build_tourney(self, teams: list, quadrants: int = 4):
         num_teams = len(teams)
@@ -70,10 +85,42 @@ class Tournament:
                     teams[quadrant * (num_teams // quadrants) + i], seed, 1
                 )
 
-        self.tourney = teams
+        self.tourney: list[TeamSeeding] = teams
 
     def __len__(self):
         return len(self.tourney)
 
     def __getitem__(self, index):
         return self.tourney[index]
+
+    def __play_round(self, comparator: TeamComparator):
+        """
+        Helper function used to play a single round of the tournament.
+        """
+        new_tourney: list[TeamSeeding] = []
+        for i in range(0, len(self), 2):
+            teamA, teamB = self[i], self[i + 1]
+
+            pr_A_wins = comparator.compare_teams(teamA.name, teamB.name)
+
+            winner = teamA if pr_A_wins >= 0.5 else teamB
+            loser = teamB if pr_A_wins >= 0.5 else teamA
+            pr = pr_A_wins if winner is teamA else 1 - pr_A_wins
+
+            print(f"{winner.name} beats {loser.name} ({pr:.2%})")
+
+            if winner.seed > loser.seed:
+                print(f"\t{winner.seed} {loser.seed} UPSET")
+
+            winner.probability *= pr
+            new_tourney.append(winner)
+
+        self.tourney = new_tourney
+
+    def simulate(self, comparator: TeamComparator):
+        """
+        Simulate the tournament until there is only one team left.
+        """
+
+        while len(self) > 1:
+            self.__play_round(comparator)
