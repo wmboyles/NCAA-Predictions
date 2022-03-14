@@ -7,7 +7,7 @@ import numpy as np
 from scipy.stats import chi2
 
 import data_scraping
-from game_attrs import GameValues, GameWeights
+from .game_attrs import GameValues, GameWeights
 
 
 class TeamComparator(ABC):

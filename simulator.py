@@ -1,7 +1,7 @@
 import pickle
 
-from team_comparators import PageRankComparator
-from tournament import Tournament
+from comparison.team_comparators import PageRankComparator
+from comparison.tournament import Tournament
 
 
 def build_tourney(rankings: list) -> list:

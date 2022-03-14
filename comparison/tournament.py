@@ -1,7 +1,7 @@
 from typing import Iterator
 from dataclasses import dataclass
 
-from team_comparators import TeamComparator
+from .team_comparators import TeamComparator
 
 
 @dataclass
