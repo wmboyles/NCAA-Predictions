@@ -1,18 +1,13 @@
 import os
 import pickle
+from abc import ABC, abstractmethod
 from math import sqrt
 
-import matplotlib
 import numpy as np
 from scipy.stats import chi2
 
 import data_scraping
 from game_attrs import GameValues, GameWeights
-
-matplotlib.use("TkAgg")
-from abc import ABC, abstractmethod
-
-import matplotlib.pyplot as plt
 
 
 class TeamComparator(ABC):
@@ -62,8 +57,6 @@ class PageRankComparator(TeamComparator):
 
         KWARGS
         print_rankings -->  Should the function print out its rankings to stdout?
-                            Defaults to False.
-        plot_rankings -->   Should the function plot the rankings in sorted order?
                             Defaults to False.
         serialize_results -->   Should the function save its rankings to a .p file
                                 called "./predictions/[YEAR]/rankings.p"?
@@ -197,14 +190,6 @@ class PageRankComparator(TeamComparator):
 
             pickle.dump(serial, open(outfile1, "wb"))
             pickle.dump(vec, open(outfile2, "wb"))
-
-        # Plot graph of rankings if specified
-        if kwargs.get("plot_rankings"):
-            s = sorted(vec)
-            bins = np.arange(0.0, 3.5, 0.125)
-            hist, bins = np.histogram(s, bins=bins)
-            plt.hist(bins[:-1], bins, weights=hist)
-            plt.show()
 
         return vec
 
