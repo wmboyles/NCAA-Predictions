@@ -71,3 +71,9 @@ class Tournament:
                 )
 
         self.tourney = teams
+
+    def __len__(self):
+        return len(self.tourney)
+
+    def __getitem__(self, index):
+        return self.tourney[index]

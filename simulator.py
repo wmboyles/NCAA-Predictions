@@ -1,6 +1,7 @@
 import pickle
 
 from team_comparators import PageRankComparator
+from tournament import Tournament
 
 
 def build_tourney(rankings: list) -> list:
@@ -176,9 +177,5 @@ teams = [
     "auburn",
     "jacksonville-state",
 ]
-tourney = []
-nums = [1, 16, 8, 9, 5, 12, 4, 13, 6, 11, 3, 14, 7, 10, 2, 15]
-for i in range(4):
-    for j in range(16):
-        tourney.append((teams[16 * i + j], nums[j], 1))
+tourney = Tournament(teams)
 simulate_tourney(year, tourney)
