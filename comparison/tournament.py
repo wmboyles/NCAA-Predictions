@@ -1,3 +1,8 @@
+"""
+This module contians the Touranment class, which represents some power of 2 teams in a single-elimination tournament.
+It uses a team comparator to simulate rounds of the tournament to make predictions.
+"""
+
 from typing import Iterator
 from dataclasses import dataclass
 

@@ -1,3 +1,7 @@
+"""
+This module contains enums that represent attributes of a game and their relative weights.
+"""
+
 from enum import Enum
 
 

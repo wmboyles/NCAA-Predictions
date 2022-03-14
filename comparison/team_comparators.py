@@ -1,12 +1,18 @@
+"""
+This module contains the TeamComparator abstract base class and its concrete subclasses.
+These subclasses compare two teams and give an expected probability of a team winning.
+"""
+
+
 import os
 import pickle
 from abc import ABC, abstractmethod
 from math import sqrt
 
+import data_scraping
 import numpy as np
 from scipy.stats import chi2
 
-import data_scraping
 from .game_attrs import GameValues, GameWeights
 
 
