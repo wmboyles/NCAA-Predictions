@@ -35,8 +35,7 @@ Some examples of things SportsReference does their URLs:
             Mizzou --> missouri
 """
 
-import scraper
-import cleaner
+from . import scraper, cleaner
 
 
 def harvest(year, teams_file="./teams/teams.txt"):
