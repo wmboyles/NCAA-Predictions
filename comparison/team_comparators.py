@@ -13,7 +13,7 @@ import data_scraping
 import numpy as np
 from scipy.stats import chi2
 
-from .game_attrs import GameValues, GameWeights
+from .game_attrs import GameValues, GameWeights, TeamSeeding
 
 
 class TeamComparator(ABC):
@@ -23,7 +23,7 @@ class TeamComparator(ABC):
     """
 
     @abstractmethod
-    def compare_teams(self, teamA, teamB) -> float:
+    def compare_teams(self, teamA: TeamSeeding, teamB: TeamSeeding) -> float:
         """
         Compare two teams based on some ranking.
         Return a float between 0 and 1 representing the probability that teamA wins.
@@ -208,14 +208,14 @@ class PageRankComparator(TeamComparator):
         self._df = chi2.fit(self._vec)[0]
         self._min_vec, self._max_vec = min(self._vec)[0], max(self._vec)[0]
 
-    def compare_teams(self, teamA: str, teamB: str) -> float:
+    def compare_teams(self, teamA: TeamSeeding, teamB: TeamSeeding) -> float:
         """
         Compare two teams from the same year.
 
         Returns the probability that teamA will win.
         """
 
-        rankA, rankB = self._rankings[teamA], self._rankings[teamB]
+        rankA, rankB = self._rankings[teamA.name], self._rankings[teamB.name]
 
         diff = (
             chi2.cdf(self._max_vec, df=self._df) - chi2.cdf(self._min_vec, df=self._df)
@@ -227,3 +227,14 @@ class PageRankComparator(TeamComparator):
             return prob
         else:
             return 1 - prob
+
+
+class SeedComparator(TeamComparator):
+    """
+    Compares two teams based on their seed in whichever tournament they are both from.
+    The lower seeded team will always win.
+    """
+
+    def compare_teams(self, teamA: TeamSeeding, teamB: TeamSeeding) -> float:
+        # I made the formula up. It's only attribute is that lower seeded team will always win, tied seeds give 50%
+        return 1 - 0.5 * (teamA.seed / teamB.seed) ** 1.5

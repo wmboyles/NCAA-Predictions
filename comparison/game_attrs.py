@@ -1,8 +1,17 @@
 """
 This module contains enums that represent attributes of a game and their relative weights.
+It also contains a class to represent the state of a team within a tournament.
 """
 
+from dataclasses import dataclass
 from enum import Enum
+
+
+@dataclass
+class TeamSeeding:
+    name: str
+    seed: int
+    probability: float
 
 
 class GameValues(Enum):

@@ -4,16 +4,9 @@ It uses a team comparator to simulate rounds of the tournament to make predictio
 """
 
 from typing import Iterator
-from dataclasses import dataclass
 
+from .game_attrs import TeamSeeding
 from .team_comparators import TeamComparator
-
-
-@dataclass
-class TeamSeeding:
-    name: str
-    seed: int
-    probability: float
 
 
 class Tournament:
@@ -98,7 +91,7 @@ class Tournament:
         for i in range(0, len(self), 2):
             teamA, teamB = self[i], self[i + 1]
 
-            pr_A_wins = comparator.compare_teams(teamA.name, teamB.name)
+            pr_A_wins = comparator.compare_teams(teamA, teamB)
 
             winner = teamA if pr_A_wins >= 0.5 else teamB
             loser = teamB if pr_A_wins >= 0.5 else teamA

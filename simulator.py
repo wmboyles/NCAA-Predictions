@@ -3,11 +3,11 @@ This is the main script for the NCAA predictions project.
 One can select a comparator to compare teams and simulate a tournament.
 """
 
-from comparison.team_comparators import PageRankComparator
+import comparison.team_comparators as team_comparators
 from comparison.tournament import Tournament
 
 year = 2022
-comparator = PageRankComparator(year)
+
 tourney = Tournament(
     [
         #
@@ -88,4 +88,5 @@ tourney = Tournament(
         "iowa-state",  # 11
     ]
 )
-tourney.simulate(comparator)
+
+tourney.simulate(team_comparators.SeedComparator())
