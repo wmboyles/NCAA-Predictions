@@ -56,11 +56,13 @@ class PageRankComparator(TeamComparator):
         Uses PageRank to create a vector ranking all teams.
 
         KWARGS
-        print_rankings -->  Should the function print out its rankings to stdout?
-                            Defaults to False.
-        serialize_results -->   Should the function save its rankings to a .p file
-                                called "./predictions/[YEAR]/rankings.p"?
-                                Defaults to True.
+        first_year: bool
+            If False, then the previous year's rankings will be used initially.
+            Otherwise, all teams start ranked equally.
+        print_rankings: bool
+            Should the function print out its rankings to stdout?
+        serialize_results
+            Should the function save its rankings to a .p file called "./predictions/[YEAR]/rankings.p"?
         """
 
         # Try to deserialize .p file summary. Try to create it if it doesn't exist
@@ -87,10 +89,8 @@ class PageRankComparator(TeamComparator):
         # Get an ordered list of all the teams
         teams = list(
             set(
-                [
-                    "-".join(game[GameValues.HOME_TEAM.value].split(" "))
-                    for game in total_summary
-                ]
+                "-".join(game[GameValues.HOME_TEAM.value].split(" "))
+                for game in total_summary
             )
         )
         num_teams = len(teams)
