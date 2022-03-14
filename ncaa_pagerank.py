@@ -4,7 +4,7 @@ import os
 from math import sqrt
 from scipy.stats import chi2
 
-import harvester
+import data_scraping
 
 import matplotlib
 
@@ -17,7 +17,7 @@ from enum import Enum
 class GameValues(Enum):
     """
     Items in this enum are the different indexes of the "four factor" statistics
-    that the cleaner program extracts and claculates for each game.
+    that the cleaner program extracts and calculates for each game.
     To use their value, you'd write game[GameValue.ITEM.value]
 
     In all instances, a high value of game[GameValue.ITEM.value] means a better team
@@ -46,12 +46,11 @@ class GameValues(Enum):
 
 class GameWeights(Enum):
     """
-    Items in this enum are the weights of a team winning game and the
-    "four factors":
-        Effective field goal percentage
-        Turnover percentage
-        Offensive rebound percentage
-        Free throw rate.
+    Items in this enum are the weights of a team winning game and the "four factors":
+        * Effective field goal percentage
+        * Turnover percentage
+        * Offensive rebound percentage
+        * Free throw rate.
     These weights can be changed to change the importance of these factors in each game.
     """
 
@@ -97,12 +96,14 @@ def rank(
     except FileNotFoundError:
         print("--- WARNING: No summary found for", year, "Trying to create summary...")
         try:
-            harvester.harvest(year)
+            data_scraping.harvest(year)
         except:
             print("--- ERROR: Could not make summary for", year)
             return
+
         print("--- SUCCESS: Summary created for", year)
         print("--- Trying to rank again with newly created summary")
+
         rank(year, alpha, iters, print_rankings, plot_rankings, serialize_results)
         return
 
@@ -294,8 +295,8 @@ def build_tourney(rankings: list) -> list:
 
 
 def simulate_tourney(year: int, tourney: list) -> list:
-    rankings = pickle.load(open("./predictions/" + str(year) + "_rankings.p", "rb"))
-    vec = pickle.load(open("./predictions/" + str(year) + "_vector.p", "rb"))
+    rankings = pickle.load(open(f"./predictions/{year}_rankings.p", "rb"))
+    vec = pickle.load(open(f"./predictions/{year}_vector.p", "rb"))
 
     df = chi2.fit(vec)[0]
     min_vec, max_vec = min(vec)[0], max(vec)[0]
@@ -376,74 +377,80 @@ def virtual_tourney(year: int) -> list:
         return virtual_tourney(year)
 
 
-year = 2021
+year = 2022
 teams = [
+    # Quadrant 1
     "gonzaga",
-    # "norfolk-state",
-    # "oklahoma",
-    # "missouri",
-    "creighton",
-    # "california-santa-barbara",
-    # "virginia",
-    # "ohio",
-    "southern-california",
-    # "drake",
-    # "kansas",
-    # "eastern-washington",
-    "oregon",
-    # "virginia-commonwealth",
-    # "iowa",
-    # "grand-canyon",
-    "michigan",
-    # "texas-southern",
-    # "louisiana-state",
-    # "st-bonaventure",
-    # "colorado",
-    # "georgetown",
-    "florida-state",
-    # "north-carolina-greensboro",
-    # "brigham-young",
-    "ucla",
-    # "texas",
-    # "abilene-christian",
-    # "connecticut",
-    # "maryland",
-    "alabama",
-    # "iona",
-    "baylor",
-    # "hartford",
-    # "north-carolina",
-    # "wisconsin",
-    "villanova",
-    # "winthrop",
-    # "purdue",
-    # "north-texas",
-    # "texas-tech",
-    # "utah-state",
+    "georgia-state",
+    "boise-state",
+    "memphis",
+    "connecticut",
+    "new-mexico-state",
     "arkansas",
-    # "colgate",
-    # "florida",
-    # "virginia-tech",
-    # "ohio-state",
-    "oral-roberts",
-    # "illinois",
-    # "drexel",
-    "loyola-il",
-    # "georgia-tech",
-    # "tennessee",
-    "oregon-state",
-    # "oklahoma-state",
-    # "liberty",
-    # "san-diego-state",
-    "syracuse",
-    # "west-virginia",
-    # "morehead-state",
-    # "clemson",
-    # "rutgers",
+    "vermont",
+    "alabama",
+    "rutgers",
+    "texas-tech",
+    "montana-state",
+    "michigan-state",
+    "davidson",
+    "duke",
+    "cal-state-fullerton",
+    # Quadrant 2
+    "baylor",
+    "norfolk-state",
+    "north-carolina",
+    "marquette",
+    "saint-marys-ca",
+    "indiana",
+    "ucla",
+    "akron",
+    "texas",
+    "virginia-tech",
+    "purdue",
+    "yale",
+    "murray-state",
+    "san-francisco",
+    "kentucky",
+    "saint-peters",
+    # Quadrant 3
+    "arizona",
+    "wright-state",
+    "seton-hall",
+    "texas-christian",
     "houston",
-    # "cleveland-state",
+    "alabama-birmingham",
+    "illinois",
+    "chattanooga",
+    "colorado-state",
+    "michigan",
+    "tennessee",
+    "longwood",
+    "ohio-state",
+    "loyola-il",
+    "villanova",
+    "delaware",
+    # Quadrant 4
+    "kansas",
+    "texas-southern",
+    "san-diego-state",
+    "creighton",
+    "iowa",
+    "richmond",
+    "providence",
+    "south-dakota-state",
+    "louisiana-state",
+    "iowa-state",
+    "wisconsin",
+    "colgate",
+    "southern-california",
+    "miami-fl",
+    "auburn",
+    "jacksonville-state",
 ]
-tourney = [(team, 1, 1) for team in teams]
-
-rank(year, iters=10000)
+tourney = []
+nums = [1, 16, 8, 9, 5, 12, 4, 13, 6, 11, 3, 14, 7, 10, 2, 15]
+for i in range(4):
+    for j in range(16):
+        tourney.append((teams[16 * i + j], nums[j], 1))
 simulate_tourney(year, tourney)
