@@ -7,60 +7,26 @@ import numpy as np
 from scipy.stats import chi2
 
 import data_scraping
+from game_attrs import GameValues, GameWeights
 
 matplotlib.use("TkAgg")
 from abc import ABC, abstractmethod
-from enum import Enum
 
 import matplotlib.pyplot as plt
 
 
-class GameValues(Enum):
-    """
-    Items in this enum are the different indexes of the "four factor" statistics
-    that the cleaner program extracts and calculates for each game.
-    To use their value, you'd write game[GameValue.ITEM.value]
-
-    In all instances, a high value of game[GameValue.ITEM.value] means a better team
-    """
-
-    HOME_TEAM = 0  # Name of first (called home but not always) team
-    AWAY_TEAM = 1  # Name of second (called away but not always) team
-
-    WIN_LOSS = 2  # Did the home/first team win?
-
-    HOME_SCORE = 3  # The home/first team's score
-    AWAY_SCORE = 4  # The away/second team's score
-
-    HOME_eFGp = 5  # The home/first team's effective field goal percentage
-    AWAY_eFGp = 6  # The away/second team's effective field goal percentage
-
-    HOME_TOVp = 7  # The home/first team's turnover percentage
-    AWAY_TOVp = 8  # The away/second team's turnover percentage
-
-    HOME_ORBp = 9  # The home/first team's offensive rebound percentage
-    AWAY_ORBp = 10  # The away/second team's offensive rebound percentage
-
-    HOME_FTR = 11  # The home/first team's free throw rate
-    AWAY_FTR = 12  # The away/second team's free throw rate
-
-
-class GameWeights(Enum):
-    """
-    Items in this enum are the weights of a team winning game and the "four factors":
-        * Effective field goal percentage
-        * Turnover percentage
-        * Offensive rebound percentage
-        * Free throw rate.
-    These weights can be changed to change the importance of these factors in each game.
-    """
-
-    WEIGHTS = [50, 13.3333, 6.6666, 8.3333, 5]
-
-
 class TeamComparator(ABC):
+    """
+    Interface for comparing two teams based on some ranking.
+    Implementing classes can determine what the ranking is based on.
+    """
+
     @abstractmethod
     def compare_teams(self, teamA, teamB) -> float:
+        """
+        Compare two teams based on some ranking.
+        Return a float between 0 and 1 representing the probability that teamA wins.
+        """
         ...
 
 

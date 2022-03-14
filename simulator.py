@@ -1,3 +1,5 @@
+import pickle
+
 from team_comparators import PageRankComparator
 
 
@@ -99,7 +101,7 @@ def virtual_tourney(year: int) -> list:
         return simulate_tourney(year, tourney)
 
     except FileNotFoundError:
-        rank(year)
+        PageRankComparator(year)
         return virtual_tourney(year)
 
 
