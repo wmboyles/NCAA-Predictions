@@ -184,7 +184,7 @@ class PageRankComparator(TeamComparator):
         if kwargs.get("serialize_results"):
             # Make the year folder
             outfile1 = f"./predictions/{self.year}_pagerank_rankings.p"
-            outfile2 = f"./predictions/{self.year}_ragerank_vector.p"
+            outfile2 = f"./predictions/{self.year}_pagerank_vector.p"
             os.makedirs(os.path.dirname(outfile1), exist_ok=True)
 
             serial = dict()
@@ -247,7 +247,7 @@ class BradleyTerryComparator(TeamComparator):
     See https://en.wikipedia.org/wiki/Bradley%E2%80%93Terry_model
     """
 
-    def __init__(self, year: int, iters: int = 1000):
+    def __init__(self, year: int, iters: int = 1):
         self.year = year
         self.iters = iters
 
@@ -302,19 +302,40 @@ class BradleyTerryComparator(TeamComparator):
                 mat[home_idx, away_idx] += 1
 
         vec = np.ones((num_teams, 1)) / num_teams
+        if not kwargs.get("first_year"):
+            kwargs["first_year"] = True
+            kwargs["serialize_results"] = True
+
+            # Dumb hack to look back at previous year
+            self.year -= 1
+            self.__rank(**kwargs)
+            self.year += 1
+
+            prev_year_rankings = pickle.load(
+                open(f"./predictions/{self.year-1}_bradleyterry_rankings.p", "rb")
+            )
+
+            for team, value in prev_year_rankings.items():
+                vec[teams.index(team)] = value
+        vec /= sum(vec)
 
         # Perform many iterations of Bradley-Terry process
+
         for _ in range(self.iters):
             new_vec = np.copy(vec)
             # For each entry, p_i = (number of wins for team i) / sum((total games vs team j) / (pr_i + pr_j))
             for j in range(num_teams):
-                numerator = sum(mat[j, :])
+                numerator = sum(mat[j])
                 denominator = sum(
                     (mat[j, k] + mat[k, j]) / (vec[j] + vec[k])
                     for k in range(num_teams)
                     if k != j
                 )
                 new_vec[j] = numerator / denominator
+
+            # Make sure no vector entries are 0.
+            # If they are, set them to 1 / num_teams**2
+            new_vec[new_vec == 0] = 1 / num_teams**2
 
             # Normalize vector
             new_vec /= sum(new_vec)
