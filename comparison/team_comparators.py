@@ -71,7 +71,8 @@ class PageRankComparator(TeamComparator):
             Should the function save its rankings to a .p file called "./predictions/[YEAR]/rankings.p"?
         """
 
-        # Try to deserialize .p file summary. Try to create it if it doesn't exist
+        # Try to deserialize .p file summary.
+        # Try to create it if it doesn't exist
         try:
             total_summary = pickle.load(
                 open(f"./summaries/{self.year}/total_summary.p", "rb")
@@ -89,8 +90,7 @@ class PageRankComparator(TeamComparator):
             print(f"--- SUCCESS: Summary created for {self.year}")
             print("--- Trying to rank again with newly created summary")
 
-            self.__rank(**kwargs)
-            return
+            return self.__rank(**kwargs)
 
         # Get an ordered list of all the teams
         teams = list(
@@ -164,9 +164,8 @@ class PageRankComparator(TeamComparator):
                 mat[away_idx, home_idx] += away_pr_score
 
         # Alter the matrix to take into account our alpha factor
-        mat = (self.alpha * mat) + (1 - self.alpha) * np.ones(
-            (num_teams, num_teams)
-        ) / num_teams
+        mat *= self.alpha
+        mat += (1 - self.alpha) * np.ones((num_teams, num_teams)) / num_teams
 
         # Perform many iterations of matrix multiplication
         for i in range(self.iters):
@@ -184,8 +183,8 @@ class PageRankComparator(TeamComparator):
         # Serialize results if specificed
         if kwargs.get("serialize_results"):
             # Make the year folder
-            outfile1 = f"./predictions/{self.year}_rankings.p"
-            outfile2 = f"./predictions/{self.year}_vector.p"
+            outfile1 = f"./predictions/{self.year}_pagerank_rankings.p"
+            outfile2 = f"./predictions/{self.year}_ragerank_vector.p"
             os.makedirs(os.path.dirname(outfile1), exist_ok=True)
 
             serial = dict()
@@ -202,9 +201,11 @@ class PageRankComparator(TeamComparator):
     def __build_model(self):
         # Get info about each team as attributes
         self._rankings = pickle.load(
-            open(f"./predictions/{self.year}_rankings.p", "rb")
+            open(f"./predictions/{self.year}_pagerank_rankings.p", "rb")
         )
-        self._vec = pickle.load(open(f"./predictions/{self.year}_vector.p", "rb"))
+        self._vec = pickle.load(
+            open(f"./predictions/{self.year}_pagerank_vector.p", "rb")
+        )
         self._df = chi2.fit(self._vec)[0]
         self._min_vec, self._max_vec = min(self._vec)[0], max(self._vec)[0]
 
@@ -238,3 +239,126 @@ class SeedComparator(TeamComparator):
     def compare_teams(self, teamA: TeamSeeding, teamB: TeamSeeding) -> float:
         # I made the formula up. It's only attribute is that lower seeded team will always win, tied seeds give 50%
         return 1 - 0.5 * (teamA.seed / teamB.seed) ** 1.5
+
+
+class BradleyTerryComparator(TeamComparator):
+    """
+    Implements Bradley-Terry model for team comparisons.
+    See https://en.wikipedia.org/wiki/Bradley%E2%80%93Terry_model
+    """
+
+    def __init__(self, year: int, iters: int = 1000):
+        self.year = year
+        self.iters = iters
+
+        self.__rank(serialize_results=True)
+        self.__build_model()
+
+    def __rank(self, **kwargs: dict[str, bool]):
+        # Try to deserialize .p file summary.
+        # Try to create it if it doesn't exist.
+        try:
+            total_summary = pickle.load(
+                open(f"./summaries/{self.year}/total_summary.p", "rb")
+            )
+        except FileNotFoundError:
+            print(
+                f"--- WARNING: No summary found for {self.year}. Trying to create summary..."
+            )
+
+            try:
+                data_scraping.harvest(self.year)
+            except:
+                print(f"--- ERROR: Could not make summary for {self.year}.")
+                return
+
+            print(f"--- SUCCESS: Summary created for {self.year}")
+            print("--- Trying to rank again with newly created summary")
+
+            return self.__rank(**kwargs)
+
+        # Get ordered list of all teams
+        teams = list(
+            set(
+                "-".join(game[GameValues.HOME_TEAM.value].split(" "))
+                for game in total_summary
+            )
+        )
+        num_teams = len(teams)
+
+        # Create game winning matrix and initial vector
+        mat = np.zeros((num_teams, num_teams))
+        for game in total_summary:
+            # We only want to count games where both teams are D1 (in teams list)
+            # We choose to only look at games where the first team won so we don't double-count games
+            if (
+                game[GameValues.HOME_TEAM.value] in teams
+                and game[GameValues.AWAY_TEAM.value] in teams
+                and game[GameValues.WIN_LOSS.value]
+            ):
+                home_idx = teams.index(game[GameValues.HOME_TEAM.value])
+                away_idx = teams.index(game[GameValues.AWAY_TEAM.value])
+
+                mat[home_idx, away_idx] += 1
+
+        vec = np.ones((num_teams, 1)) / num_teams
+
+        # Perform many iterations of Bradley-Terry process
+        for _ in range(self.iters):
+            new_vec = np.copy(vec)
+            # For each entry, p_i = (number of wins for team i) / sum((total games vs team j) / (pr_i + pr_j))
+            for j in range(num_teams):
+                numerator = sum(mat[j, :])
+                denominator = sum(
+                    (mat[j, k] + mat[k, j]) / (vec[j] + vec[k])
+                    for k in range(num_teams)
+                    if k != j
+                )
+                new_vec[j] = numerator / denominator
+
+            # Normalize vector
+            new_vec /= sum(new_vec)
+
+            # Update vector
+            vec = new_vec
+
+        # Sort the (ranking, team) pair into a list of tuples
+        sorted_pairs = sorted([prob[0], team] for team, prob in zip(teams, vec))
+
+        # Serialize reults if specified
+        if kwargs.get("serialize_results"):
+            # Make the year folder
+            outfile1 = f"./predictions/{self.year}_bradleyterry_rankings.p"
+            outfile2 = f"./predictions/{self.year}_bradleyterry_vector.p"
+            os.makedirs(os.path.dirname(outfile1), exist_ok=True)
+
+            serial = dict()
+            for team in teams:
+                serial.setdefault(team, 0)
+            for item in sorted_pairs:
+                serial[item[1]] = item[0]
+
+            pickle.dump(serial, open(outfile1, "wb"))
+            pickle.dump(vec, open(outfile2, "wb"))
+
+        return vec
+
+    def __build_model(self):
+        self._rankings = pickle.load(
+            open(f"./predictions/{self.year}_bradleyterry_rankings.p", "rb")
+        )
+        self._vec = pickle.load(
+            open(f"./predictions/{self.year}_bradleyterry_vector.p", "rb")
+        )
+
+    def compare_teams(self, teamA: TeamSeeding, teamB: TeamSeeding) -> float:
+        """
+        Compare two teams from the same year.
+
+        Returns the probability that teamA will win.
+        """
+
+        scoreA = self._rankings[teamA.name]
+        scoreB = self._rankings[teamB.name]
+
+        return scoreA / (scoreA + scoreB)
