@@ -89,4 +89,4 @@ tourney = Tournament(
     ]
 )
 
-tourney.simulate(team_comparators.SeedComparator())
+tourney.simulate(team_comparators.PageRankComparator(year))

@@ -94,7 +94,7 @@ class Tournament:
             pr_A_wins = comparator.compare_teams(teamA, teamB)
 
             winner = teamA if pr_A_wins >= 0.5 else teamB
-            loser = teamB if pr_A_wins >= 0.5 else teamA
+            loser = teamB if winner is teamA else teamA
             pr = pr_A_wins if winner is teamA else 1 - pr_A_wins
 
             print(f"{winner.name} beats {loser.name} ({pr:.2%})")
@@ -114,3 +114,4 @@ class Tournament:
 
         while len(self) > 1:
             self.__play_round(comparator)
+            print("-" * 50)
