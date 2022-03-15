@@ -383,3 +383,20 @@ class BradleyTerryComparator(TeamComparator):
         scoreB = self._rankings[teamB.name]
 
         return scoreA / (scoreA + scoreB)
+
+
+class HydridComparator(TeamComparator):
+    def __init__(self, *comparators: TeamComparator):
+        self.comparators = comparators
+
+    def compare_teams(self, teamA: TeamSeeding, teamB: TeamSeeding) -> float:
+        confidences = [
+            comparator.compare_teams(teamA, teamB) for comparator in self.comparators
+        ]
+
+        min_confidence = min(confidences)
+        max_confidence = max(confidences)
+
+        return (
+            max_confidence if (max_confidence >= 1 - min_confidence) else min_confidence
+        )
