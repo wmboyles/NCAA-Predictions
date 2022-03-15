@@ -385,18 +385,146 @@ class BradleyTerryComparator(TeamComparator):
         return scoreA / (scoreA + scoreB)
 
 
+class EloComparator(TeamComparator):
+    """
+    Implements Elo model for team comparisons.
+    See https://en.wikipedia.org/wiki/Elo_rating_system
+    """
+
+    def __init__(self, year: int):
+        self.year = year
+
+        self.__rank(serialize_results=True)
+        self.__build_model()
+
+    def __rank(self, **kwargs: dict[str, bool | int]):
+        # Try to deserialize .p file summary.
+        # Try to create it if it doesn't exist.
+        try:
+            total_summary = pickle.load(
+                open(f"./summaries/{self.year}/total_summary.p", "rb")
+            )
+        except FileNotFoundError:
+            print(
+                f"--- WARNING: No summary found for {self.year}. Trying to create summary..."
+            )
+
+            try:
+                data_scraping.harvest(self.year)
+            except:
+                print(f"--- ERROR: Could not make summary for {self.year}.")
+                return
+
+            print(f"--- SUCCESS: Summary created for {self.year}")
+            print("--- Trying to rank again with newly created summary")
+
+            return self.__rank(**kwargs)
+
+        # Get ordered list of all teams
+        teams = list(
+            set(
+                "-".join(game[GameValues.HOME_TEAM.value].split(" "))
+                for game in total_summary
+            )
+        )
+        num_teams = len(teams)
+
+        # Initialize Elo ratings of all teams to 1750
+        initial_rating = kwargs.get("initial_rating", 1750)
+        ratings = initial_rating * np.ones((num_teams, 1))
+
+        # Decide whether to look back or not
+        if not kwargs.get("first_year"):
+            kwargs["first_year"] = True
+            kwargs["serialize_results"] = True
+
+            # Dumb hack to look back at previous year
+            self.year -= 1
+            self.__rank(**kwargs)
+            self.year += 1
+
+            prev_year_ratings = pickle.load(
+                open(f"./predictions/{self.year-1}_elo_rankings.p", "rb")
+            )
+
+            for team, value in prev_year_ratings.items():
+                ratings[teams.index(team)] = value
+
+        for game in total_summary:
+            # We only want to count games where both teams are D1 (in teams list)
+            # We choose to only look at games where the first team won so we don't double-count games
+            if (
+                game[GameValues.HOME_TEAM.value] in teams
+                and game[GameValues.AWAY_TEAM.value] in teams
+                and game[GameValues.WIN_LOSS.value]
+            ):
+                home_idx = teams.index(game[GameValues.HOME_TEAM.value])
+                away_idx = teams.index(game[GameValues.AWAY_TEAM.value])
+
+                qA = 10 ** (ratings[home_idx] / 400)
+                qB = 10 ** (ratings[away_idx] / 400)
+                eA, eB = qA / (qA + qB), qB / (qA + qB)
+
+                # Update Elo ratings
+                min_rating = min(ratings[home_idx], ratings[away_idx])
+                if min_rating < 1500:
+                    K = 32
+                elif 1700 <= min_rating <= 2000:
+                    K = 24
+                else:
+                    K = 16
+
+                ratings[home_idx] += K * (1 - eA)
+                ratings[away_idx] += K * (0 - eB)
+
+        # Sort the (ranking, team) pair into a list of tuples
+        sorted_pairs = sorted([rating[0], team] for team, rating in zip(teams, ratings))
+
+        if kwargs.get("serialize_results"):
+            # Make the year folder
+            outfile1 = f"./predictions/{self.year}_elo_rankings.p"
+            outfile2 = f"./predictions/{self.year}_elo_vector.p"
+            os.makedirs(os.path.dirname(outfile1), exist_ok=True)
+
+            serial = dict()
+            for team in teams:
+                serial.setdefault(team, 0)
+            for item in sorted_pairs:
+                serial[item[1]] = item[0]
+
+            pickle.dump(serial, open(outfile1, "wb"))
+            pickle.dump(ratings, open(outfile2, "wb"))
+
+        return ratings
+
+    def __build_model(self):
+        self._rankings = pickle.load(
+            open(f"./predictions/{self.year}_elo_rankings.p", "rb")
+        )
+        self._vec = pickle.load(open(f"./predictions/{self.year}_elo_vector.p", "rb"))
+
+    def compare_teams(self, teamA: TeamSeeding, teamB: TeamSeeding) -> float:
+        qA = 10 ** (self._rankings[teamA.name] / 400)
+        qB = 10 ** (self._rankings[teamB.name] / 400)
+
+        eA = qA / (qA + qB)
+
+        return eA
+
+
 class HydridComparator(TeamComparator):
     def __init__(self, *comparators: TeamComparator):
         self.comparators = comparators
 
     def compare_teams(self, teamA: TeamSeeding, teamB: TeamSeeding) -> float:
-        confidences = [
+        confs = [
             comparator.compare_teams(teamA, teamB) for comparator in self.comparators
         ]
 
-        min_confidence = min(confidences)
-        max_confidence = max(confidences)
+        min_conf = min(confs)
+        max_conf = max(confs)
 
-        return (
-            max_confidence if (max_confidence >= 1 - min_confidence) else min_confidence
-        )
+        return max_conf if (max_conf >= 1 - min_conf) else min_conf
+
+
+# sorted(pickle.load(open(f"./predictions/{2022}_elo_rankings.p", "rb")).items(), key=lambda x: x[1])

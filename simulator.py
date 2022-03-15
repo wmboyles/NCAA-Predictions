@@ -89,4 +89,4 @@ tourney = Tournament(
     ]
 )
 
-tourney.simulate(team_comparators.PageRankComparator(year))
+tourney.simulate(team_comparators.EloComparator(year))
