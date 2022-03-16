@@ -102,8 +102,6 @@ class PageRankComparator(TeamComparator):
         first_year: bool
             If False, then the previous year's rankings will be used initially.
             Otherwise, all teams start ranked equally.
-        print_rankings: bool
-            Should the function print out its rankings to stdout?
         serialize_results
             Should the function save its rankings to a .p file called "./predictions/[YEAR]/rankings.p"?
         """
@@ -179,17 +177,12 @@ class PageRankComparator(TeamComparator):
         mat += (1 - self.alpha) * np.ones((num_teams, num_teams)) / num_teams
 
         # Perform many iterations of matrix multiplication
-        for i in range(self.iters):
+        for _ in range(self.iters):
             vec = mat @ vec
             vec *= num_teams / sum(vec)  # Keep weights summed to set value (numerator)
 
         # Sort the (ranking, team) pair into a list of tuples
         sorted_pairs = sorted([(prob[0], team) for team, prob in zip(teams, vec)])
-
-        # Print ranking pairs if specificed
-        if kwargs.get("print_rankings"):
-            for i in range(len(sorted_pairs)):
-                print(num_teams - i, sorted_pairs[i])
 
         # Serialize results if specificed
         if kwargs.get("serialize_results"):
