@@ -9,6 +9,13 @@ from enum import Enum
 
 @dataclass
 class TeamSeeding:
+    """
+    In a tournament, each team has 3 attributes we track:
+    * name: the name of the team
+    * seed: the seed of the team as given by the tournament bracket
+    * probability: the probability of the team being in the current position in the tournament
+    """
+
     name: str
     seed: int
     probability: float
