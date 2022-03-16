@@ -102,8 +102,6 @@ class PageRankComparator(TeamComparator):
         first_year: bool
             If False, then the previous year's rankings will be used initially.
             Otherwise, all teams start ranked equally.
-        serialize_results
-            Should the function save its rankings to a .p file called "./predictions/[YEAR]/rankings.p"?
         """
 
         total_summary = TeamComparator.get_total_summary(self.year)
@@ -184,21 +182,20 @@ class PageRankComparator(TeamComparator):
         # Sort the (ranking, team) pair into a list of tuples
         sorted_pairs = sorted([(prob[0], team) for team, prob in zip(teams, vec)])
 
-        # Serialize results if specificed
-        if kwargs.get("serialize_results"):
-            # Make the year folder
-            outfile1 = f"./predictions/{self.year}_pagerank_rankings.p"
-            outfile2 = f"./predictions/{self.year}_pagerank_vector.p"
-            os.makedirs(os.path.dirname(outfile1), exist_ok=True)
+        # Serialize results
+        # Make the year folder
+        outfile1 = f"./predictions/{self.year}_pagerank_rankings.p"
+        outfile2 = f"./predictions/{self.year}_pagerank_vector.p"
+        os.makedirs(os.path.dirname(outfile1), exist_ok=True)
 
-            serial = dict()
-            for team in teams:
-                serial.setdefault(team, 0)
-            for item in sorted_pairs:
-                serial[item[1]] = item[0]
+        serial = dict()
+        for team in teams:
+            serial.setdefault(team, 0)
+        for item in sorted_pairs:
+            serial[item[1]] = item[0]
 
-            pickle.dump(serial, open(outfile1, "wb"))
-            pickle.dump(vec, open(outfile2, "wb"))
+        pickle.dump(serial, open(outfile1, "wb"))
+        pickle.dump(vec, open(outfile2, "wb"))
 
         return vec
 
@@ -323,21 +320,20 @@ class BradleyTerryComparator(TeamComparator):
         # Sort the (ranking, team) pair into a list of tuples
         sorted_pairs = sorted([prob[0], team] for team, prob in zip(teams, vec))
 
-        # Serialize reults if specified
-        if kwargs.get("serialize_results"):
-            # Make the year folder
-            outfile1 = f"./predictions/{self.year}_bradleyterry_rankings.p"
-            outfile2 = f"./predictions/{self.year}_bradleyterry_vector.p"
-            os.makedirs(os.path.dirname(outfile1), exist_ok=True)
+        # Serialize results
+        # Make the year folder
+        outfile1 = f"./predictions/{self.year}_bradleyterry_rankings.p"
+        outfile2 = f"./predictions/{self.year}_bradleyterry_vector.p"
+        os.makedirs(os.path.dirname(outfile1), exist_ok=True)
 
-            serial = dict()
-            for team in teams:
-                serial.setdefault(team, 0)
-            for item in sorted_pairs:
-                serial[item[1]] = item[0]
+        serial = dict()
+        for team in teams:
+            serial.setdefault(team, 0)
+        for item in sorted_pairs:
+            serial[item[1]] = item[0]
 
-            pickle.dump(serial, open(outfile1, "wb"))
-            pickle.dump(vec, open(outfile2, "wb"))
+        pickle.dump(serial, open(outfile1, "wb"))
+        pickle.dump(vec, open(outfile2, "wb"))
 
         return vec
 
@@ -430,20 +426,20 @@ class EloComparator(TeamComparator):
         # Sort the (ranking, team) pair into a list of tuples
         sorted_pairs = sorted([rating[0], team] for team, rating in zip(teams, ratings))
 
-        if kwargs.get("serialize_results"):
-            # Make the year folder
-            outfile1 = f"./predictions/{self.year}_elo_rankings.p"
-            outfile2 = f"./predictions/{self.year}_elo_vector.p"
-            os.makedirs(os.path.dirname(outfile1), exist_ok=True)
+        # Serialize results
+        # Make the year folder
+        outfile1 = f"./predictions/{self.year}_elo_rankings.p"
+        outfile2 = f"./predictions/{self.year}_elo_vector.p"
+        os.makedirs(os.path.dirname(outfile1), exist_ok=True)
 
-            serial = dict()
-            for team in teams:
-                serial.setdefault(team, 0)
-            for item in sorted_pairs:
-                serial[item[1]] = item[0]
+        serial = dict()
+        for team in teams:
+            serial.setdefault(team, 0)
+        for item in sorted_pairs:
+            serial[item[1]] = item[0]
 
-            pickle.dump(serial, open(outfile1, "wb"))
-            pickle.dump(ratings, open(outfile2, "wb"))
+        pickle.dump(serial, open(outfile1, "wb"))
+        pickle.dump(ratings, open(outfile2, "wb"))
 
         return ratings
 
