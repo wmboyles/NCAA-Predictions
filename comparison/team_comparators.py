@@ -67,6 +67,18 @@ class TeamComparator(ABC):
             )
         )
 
+    @classmethod
+    def serialize_results(
+        cls, year: int, model_name: str, rankings: dict, vec: np.ndarray
+    ):
+        # Make the year folder
+        outfile1 = f"./predictions/{year}_{model_name}_rankings.p"
+        outfile2 = f"./predictions/{year}_{model_name}_vector.p"
+        os.makedirs(os.path.dirname(outfile1), exist_ok=True)
+
+        pickle.dump(rankings, open(outfile1, "wb"))
+        pickle.dump(vec, open(outfile2, "wb"))
+
 
 class PageRankComparator(TeamComparator):
     """
@@ -179,36 +191,26 @@ class PageRankComparator(TeamComparator):
             vec = mat @ vec
             vec *= num_teams / sum(vec)  # Keep weights summed to set value (numerator)
 
-        # Sort the (ranking, team) pair into a list of tuples
+        # Build rankings
         sorted_pairs = sorted([(prob[0], team) for team, prob in zip(teams, vec)])
-
-        # Serialize results
-        # Make the year folder
-        outfile1 = f"./predictions/{self.year}_pagerank_rankings.p"
-        outfile2 = f"./predictions/{self.year}_pagerank_vector.p"
-        os.makedirs(os.path.dirname(outfile1), exist_ok=True)
-
-        serial = dict()
+        rankings = dict()
         for team in teams:
-            serial.setdefault(team, 0)
-        for item in sorted_pairs:
-            serial[item[1]] = item[0]
+            rankings.setdefault(team, 0)
+        for pair in sorted_pairs:
+            rankings[pair[1]] = pair[0]
 
-        pickle.dump(serial, open(outfile1, "wb"))
-        pickle.dump(vec, open(outfile2, "wb"))
+        TeamComparator.serialize_results(self.year, "pagerank", rankings, vec)
 
         return vec
 
     def __build_model(self):
-        # Get info about each team as attributes
         self._rankings = pickle.load(
             open(f"./predictions/{self.year}_pagerank_rankings.p", "rb")
         )
-        self._vec = pickle.load(
-            open(f"./predictions/{self.year}_pagerank_vector.p", "rb")
-        )
-        self._df = chi2.fit(self._vec)[0]
-        self._min_vec, self._max_vec = min(self._vec)[0], max(self._vec)[0]
+
+        vec = pickle.load(open(f"./predictions/{self.year}_pagerank_vector.p", "rb"))
+        self._df = chi2.fit(vec)[0]
+        self._min_vec, self._max_vec = min(vec)[0], max(vec)[0]
 
     def compare_teams(self, teamA: TeamSeeding, teamB: TeamSeeding) -> float:
         """
@@ -219,16 +221,15 @@ class PageRankComparator(TeamComparator):
 
         rankA, rankB = self._rankings[teamA.name], self._rankings[teamB.name]
 
-        diff = (
-            chi2.cdf(self._max_vec, df=self._df) - chi2.cdf(self._min_vec, df=self._df)
-        ) / sqrt(2)
-        a, b = chi2.cdf(rankA, df=self._df), chi2.cdf(rankB, df=self._df)
-        prob = min(abs(a - b) / diff + 0.5, 0.999)
+        max_cdf = chi2.cdf(self._max_vec, df=self._df)
+        min_cdf = chi2.cdf(self._min_vec, df=self._df)
+        diff = (max_cdf - min_cdf) / sqrt(2)
 
-        if rankA >= rankB:
-            return prob
-        else:
-            return 1 - prob
+        a_cdf, b_cdf = chi2.cdf(rankA, df=self._df), chi2.cdf(rankB, df=self._df)
+
+        prob = min(abs(a_cdf - b_cdf) / diff + 0.5, 0.999)
+
+        return prob if rankA >= rankB else 1 - prob
 
 
 class SeedComparator(TeamComparator):
@@ -252,10 +253,19 @@ class BradleyTerryComparator(TeamComparator):
         self.year = year
         self.iters = iters
 
-        self.__rank(serialize_results=True)
+        self.__rank()
         self.__build_model()
 
     def __rank(self, **kwargs: dict[str, bool]):
+        """
+        Uses Bradley-Terry model to create a vector ranking all teams.
+
+        KWARGS
+        first_year: bool
+            If False, then the previous year's rankings will be used initially.
+            Otherwise, all teams start ranked equally.
+        """
+
         total_summary = TeamComparator.get_total_summary(self.year)
         teams = TeamComparator.get_teams(total_summary)
         num_teams = len(teams)
@@ -293,8 +303,7 @@ class BradleyTerryComparator(TeamComparator):
                 vec[teams.index(team)] = value
         vec /= sum(vec)
 
-        # Perform many iterations of Bradley-Terry process
-
+        # Perform iterations of Bradley-Terry process
         for _ in range(self.iters):
             new_vec = np.copy(vec)
             # For each entry, p_i = (number of wins for team i) / sum((total games vs team j) / (pr_i + pr_j))
@@ -317,32 +326,19 @@ class BradleyTerryComparator(TeamComparator):
             # Update vector
             vec = new_vec
 
-        # Sort the (ranking, team) pair into a list of tuples
+        # Build rankings
         sorted_pairs = sorted([prob[0], team] for team, prob in zip(teams, vec))
-
-        # Serialize results
-        # Make the year folder
-        outfile1 = f"./predictions/{self.year}_bradleyterry_rankings.p"
-        outfile2 = f"./predictions/{self.year}_bradleyterry_vector.p"
-        os.makedirs(os.path.dirname(outfile1), exist_ok=True)
-
-        serial = dict()
+        rankings = dict()
         for team in teams:
-            serial.setdefault(team, 0)
+            rankings.setdefault(team, 0)
         for item in sorted_pairs:
-            serial[item[1]] = item[0]
+            rankings[item[1]] = item[0]
 
-        pickle.dump(serial, open(outfile1, "wb"))
-        pickle.dump(vec, open(outfile2, "wb"))
-
-        return vec
+        TeamComparator.serialize_results(self.year, "bradleyterry", rankings, vec)
 
     def __build_model(self):
         self._rankings = pickle.load(
             open(f"./predictions/{self.year}_bradleyterry_rankings.p", "rb")
-        )
-        self._vec = pickle.load(
-            open(f"./predictions/{self.year}_bradleyterry_vector.p", "rb")
         )
 
     def compare_teams(self, teamA: TeamSeeding, teamB: TeamSeeding) -> float:
@@ -371,13 +367,24 @@ class EloComparator(TeamComparator):
         self.__build_model()
 
     def __rank(self, **kwargs: dict[str, bool | int]):
+        """
+        Uses Elo model to create a vector ranking all teams.
+
+        KWARGS
+        first_year: bool
+            If False, then the previous year's rankings will be used initially.
+            Otherwise, all teams start ranked equally.
+        inital_rating: int
+            Initial rating for all teams.
+            The default is 1750.
+        """
+
         total_summary = TeamComparator.get_total_summary(self.year)
         teams = TeamComparator.get_teams(total_summary)
         num_teams = len(teams)
 
-        # Initialize Elo ratings of all teams to 1750
-        initial_rating = kwargs.get("initial_rating", 1750)
-        ratings = initial_rating * np.ones((num_teams, 1))
+        # Initialize Elo ratings of all teams
+        ratings = kwargs.get("initial_rating", 1750) * np.ones((num_teams, 1))
 
         # Decide whether to look back or not
         if not kwargs.get("first_year"):
@@ -423,25 +430,15 @@ class EloComparator(TeamComparator):
                 ratings[home_idx] += K * (1 - eA)
                 ratings[away_idx] += K * (0 - eB)
 
-        # Sort the (ranking, team) pair into a list of tuples
-        sorted_pairs = sorted([rating[0], team] for team, rating in zip(teams, ratings))
-
-        # Serialize results
-        # Make the year folder
-        outfile1 = f"./predictions/{self.year}_elo_rankings.p"
-        outfile2 = f"./predictions/{self.year}_elo_vector.p"
-        os.makedirs(os.path.dirname(outfile1), exist_ok=True)
-
-        serial = dict()
+        # Build rankings
+        sorted_pairs = sorted([prob[0], team] for team, prob in zip(teams, ratings))
+        rankings = dict()
         for team in teams:
-            serial.setdefault(team, 0)
+            rankings.setdefault(team, 0)
         for item in sorted_pairs:
-            serial[item[1]] = item[0]
+            rankings[item[1]] = item[0]
 
-        pickle.dump(serial, open(outfile1, "wb"))
-        pickle.dump(ratings, open(outfile2, "wb"))
-
-        return ratings
+        TeamComparator.serialize_results(self.year, "elo", rankings, ratings)
 
     def __build_model(self):
         self._rankings = pickle.load(
@@ -459,6 +456,11 @@ class EloComparator(TeamComparator):
 
 
 class HydridComparator(TeamComparator):
+    """
+    Uses other TeamComparator models to compare teams.
+    The Hybrid model chooses the most confident of the given models to use.
+    """
+
     def __init__(self, *comparators: TeamComparator):
         self.comparators = comparators
 
@@ -467,7 +469,6 @@ class HydridComparator(TeamComparator):
             comparator.compare_teams(teamA, teamB) for comparator in self.comparators
         ]
 
-        min_conf = min(confs)
-        max_conf = max(confs)
+        min_conf, max_conf = min(confs), max(confs)
 
         return max_conf if (max_conf >= 1 - min_conf) else min_conf
