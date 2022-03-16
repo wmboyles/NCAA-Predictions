@@ -30,6 +30,43 @@ class TeamComparator(ABC):
         """
         ...
 
+    @classmethod
+    def get_total_summary(cls, year: int) -> list:
+        """
+        Helper method for all team comparators to get the total summary of a year.
+        """
+
+        try:
+            total_summary = pickle.load(
+                open(f"./summaries/{year}/total_summary.p", "rb")
+            )
+        except FileNotFoundError:
+            print(
+                f"--- WARNING: No summary found for {year}. Trying to create summary..."
+            )
+
+            try:
+                data_scraping.harvest(year)
+            except:
+                print(f"--- ERROR: Could not make summary for {year}.")
+                return
+
+            print(f"--- SUCCESS: Summary created for {year}")
+            print("--- Trying again with newly created summary")
+
+            return TeamComparator.get_total_summary(cls, year)
+
+        return total_summary
+
+    @classmethod
+    def get_teams(cls, total_summary: list) -> list:
+        return list(
+            set(
+                "-".join(game[GameValues.HOME_TEAM.value].split(" "))
+                for game in total_summary
+            )
+        )
+
 
 class PageRankComparator(TeamComparator):
     """
@@ -71,34 +108,8 @@ class PageRankComparator(TeamComparator):
             Should the function save its rankings to a .p file called "./predictions/[YEAR]/rankings.p"?
         """
 
-        # Try to deserialize .p file summary.
-        # Try to create it if it doesn't exist
-        try:
-            total_summary = pickle.load(
-                open(f"./summaries/{self.year}/total_summary.p", "rb")
-            )
-        except FileNotFoundError:
-            print(
-                f"--- WARNING: No summary found for {self.year} Trying to create summary..."
-            )
-            try:
-                data_scraping.harvest(self.year)
-            except:
-                print(f"--- ERROR: Could not make summary for {self.year}")
-                return
-
-            print(f"--- SUCCESS: Summary created for {self.year}")
-            print("--- Trying to rank again with newly created summary")
-
-            return self.__rank(**kwargs)
-
-        # Get an ordered list of all the teams
-        teams = list(
-            set(
-                "-".join(game[GameValues.HOME_TEAM.value].split(" "))
-                for game in total_summary
-            )
-        )
+        total_summary = TeamComparator.get_total_summary(self.year)
+        teams = TeamComparator.get_teams(total_summary)
         num_teams = len(teams)
 
         # Create PageRank matrix and initial vector
@@ -255,35 +266,8 @@ class BradleyTerryComparator(TeamComparator):
         self.__build_model()
 
     def __rank(self, **kwargs: dict[str, bool]):
-        # Try to deserialize .p file summary.
-        # Try to create it if it doesn't exist.
-        try:
-            total_summary = pickle.load(
-                open(f"./summaries/{self.year}/total_summary.p", "rb")
-            )
-        except FileNotFoundError:
-            print(
-                f"--- WARNING: No summary found for {self.year}. Trying to create summary..."
-            )
-
-            try:
-                data_scraping.harvest(self.year)
-            except:
-                print(f"--- ERROR: Could not make summary for {self.year}.")
-                return
-
-            print(f"--- SUCCESS: Summary created for {self.year}")
-            print("--- Trying to rank again with newly created summary")
-
-            return self.__rank(**kwargs)
-
-        # Get ordered list of all teams
-        teams = list(
-            set(
-                "-".join(game[GameValues.HOME_TEAM.value].split(" "))
-                for game in total_summary
-            )
-        )
+        total_summary = TeamComparator.get_total_summary(self.year)
+        teams = TeamComparator.get_teams(total_summary)
         num_teams = len(teams)
 
         # Create game winning matrix and initial vector
@@ -398,35 +382,8 @@ class EloComparator(TeamComparator):
         self.__build_model()
 
     def __rank(self, **kwargs: dict[str, bool | int]):
-        # Try to deserialize .p file summary.
-        # Try to create it if it doesn't exist.
-        try:
-            total_summary = pickle.load(
-                open(f"./summaries/{self.year}/total_summary.p", "rb")
-            )
-        except FileNotFoundError:
-            print(
-                f"--- WARNING: No summary found for {self.year}. Trying to create summary..."
-            )
-
-            try:
-                data_scraping.harvest(self.year)
-            except:
-                print(f"--- ERROR: Could not make summary for {self.year}.")
-                return
-
-            print(f"--- SUCCESS: Summary created for {self.year}")
-            print("--- Trying to rank again with newly created summary")
-
-            return self.__rank(**kwargs)
-
-        # Get ordered list of all teams
-        teams = list(
-            set(
-                "-".join(game[GameValues.HOME_TEAM.value].split(" "))
-                for game in total_summary
-            )
-        )
+        total_summary = TeamComparator.get_total_summary(self.year)
+        teams = TeamComparator.get_teams(total_summary)
         num_teams = len(teams)
 
         # Initialize Elo ratings of all teams to 1750
@@ -525,6 +482,3 @@ class HydridComparator(TeamComparator):
         max_conf = max(confs)
 
         return max_conf if (max_conf >= 1 - min_conf) else min_conf
-
-
-# sorted(pickle.load(open(f"./predictions/{2022}_elo_rankings.p", "rb")).items(), key=lambda x: x[1])
