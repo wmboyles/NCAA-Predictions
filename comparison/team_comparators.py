@@ -11,7 +11,7 @@ from math import sqrt
 
 import data_scraping
 import numpy as np
-from scipy.stats import chi2
+from scipy.stats import chi2, norm
 
 from .game_attrs import GameValues, GameWeights, TeamSeeding
 
@@ -235,12 +235,17 @@ class PageRankComparator(TeamComparator):
 class SeedComparator(TeamComparator):
     """
     Compares two teams based on their seed in whichever tournament they are both from.
-    The lower seeded team will always win.
+    The lower seeded team will always have better odds of winning.
     """
 
+    def __init__(self, stdev=None):
+        self.stdev = stdev
+        if stdev is None:
+            # standard deviation of [1,2,...,16]
+            stdev = sqrt(68 / 3)
+
     def compare_teams(self, teamA: TeamSeeding, teamB: TeamSeeding) -> float:
-        # I made the formula up. It's only attribute is that lower seeded team will always win, tied seeds give 50%
-        return 1 - 0.5 * (teamA.seed / teamB.seed) ** 1.5
+        return norm.cdf(0, loc=teamA.seed - teamB.seed, scale=self.stdev)
 
 
 class BradleyTerryComparator(TeamComparator):
