@@ -97,16 +97,12 @@ class PageRankComparator(TeamComparator):
                 Division I teams, is generally sufficient for ranking.
     """
 
-    def __init__(self, year: int, alpha: float = 0.85, iters: int = 10000):
-        self.year = year
-        self.alpha = alpha
-        self.iters = iters
-
+    def __init__(self, year: int, iters: int = 10000, alpha: float = 0.85):
         # Build PageRank stuff
-        self.__rank(serialize_results=True, first_year=True)
-        self.__build_model()
+        self.__rank(year, iters, alpha, serialize_results=True, first_year=True)
+        self.__build_model(year)
 
-    def __rank(self, **kwargs: dict[str, bool]):
+    def __rank(self, year: int, iters: int, alpha: float, **kwargs: dict[str, bool]):
         """
         Uses PageRank to create a vector ranking all teams.
 
@@ -116,7 +112,7 @@ class PageRankComparator(TeamComparator):
             Otherwise, all teams start ranked equally.
         """
 
-        total_summary = TeamComparator.get_total_summary(self.year)
+        total_summary = TeamComparator.get_total_summary(year)
         teams = TeamComparator.get_teams(total_summary)
         num_teams = len(teams)
 
@@ -124,12 +120,7 @@ class PageRankComparator(TeamComparator):
         if kwargs.get("first_year"):
             vec = np.ones((num_teams, 1))
         else:
-            self.year -= 1
-            self.alpha -= 0.1
-
-            kwargs["serialize_results"] = False
-            kwargs["first_year"] = True
-            vec = self.__rank(**kwargs)
+            vec = self.__rank(year - 1, iters, alpha - 0.1, first_year=True)
 
         num_teams = max(num_teams, len(vec))
         mat = np.zeros((num_teams, num_teams))
@@ -183,11 +174,11 @@ class PageRankComparator(TeamComparator):
                 mat[away_idx, home_idx] += away_pr_score
 
         # Alter the matrix to take into account our alpha factor
-        mat *= self.alpha
-        mat += (1 - self.alpha) * np.ones((num_teams, num_teams)) / num_teams
+        mat *= alpha
+        mat += (1 - alpha) * np.ones((num_teams, num_teams)) / num_teams
 
         # Perform many iterations of matrix multiplication
-        for _ in range(self.iters):
+        for _ in range(iters):
             vec = mat @ vec
             vec *= num_teams / sum(vec)  # Keep weights summed to set value (numerator)
 
@@ -199,16 +190,16 @@ class PageRankComparator(TeamComparator):
         for pair in sorted_pairs:
             rankings[pair[1]] = pair[0]
 
-        TeamComparator.serialize_results(self.year, "pagerank", rankings, vec)
+        TeamComparator.serialize_results(year, "pagerank", rankings, vec)
 
         return vec
 
-    def __build_model(self):
+    def __build_model(self, year: int):
         self._rankings = pickle.load(
-            open(f"./predictions/{self.year}_pagerank_rankings.p", "rb")
+            open(f"./predictions/{year}_pagerank_rankings.p", "rb")
         )
 
-        vec = pickle.load(open(f"./predictions/{self.year}_pagerank_vector.p", "rb"))
+        vec = pickle.load(open(f"./predictions/{year}_pagerank_vector.p", "rb"))
         self._df = chi2.fit(vec)[0]
         self._min_vec, self._max_vec = min(vec)[0], max(vec)[0]
 
@@ -239,12 +230,23 @@ class SeedComparator(TeamComparator):
     """
 
     def __init__(self, stdev=None):
+        """
+        Create seed comparator with optional standard deviation.
+        If no standard deviation is provided, the default of sqrt(68/3) (i.e. the standard deviation of [1,2,...,16]) is used.
+        """
+
         self.stdev = stdev
         if stdev is None:
             # standard deviation of [1,2,...,16]
-            stdev = sqrt(68 / 3)
+            self.stdev = sqrt(68 / 3)
 
     def compare_teams(self, teamA: TeamSeeding, teamB: TeamSeeding) -> float:
+        """
+        Compare two teams by finding normcdf(mean=seedA - seedB, stdev=stdev) from -inf to 0.
+        This implicitly assumes that each team's ability in a game is normal with mean of their seed and standard deviation of stdev / sqrt(2).
+        Thus, we are finding the probability that team A's ability is greater than team B's ability.
+        """
+
         return norm.cdf(0, loc=teamA.seed - teamB.seed, scale=self.stdev)
 
 
@@ -255,13 +257,10 @@ class BradleyTerryComparator(TeamComparator):
     """
 
     def __init__(self, year: int, iters: int = 1):
-        self.year = year
-        self.iters = iters
+        self.__rank(year, iters)
+        self.__build_model(year)
 
-        self.__rank()
-        self.__build_model()
-
-    def __rank(self, **kwargs: dict[str, bool]):
+    def __rank(self, year: int, iters: int, **kwargs: dict[str, bool]):
         """
         Uses Bradley-Terry model to create a vector ranking all teams.
 
@@ -271,7 +270,7 @@ class BradleyTerryComparator(TeamComparator):
             Otherwise, all teams start ranked equally.
         """
 
-        total_summary = TeamComparator.get_total_summary(self.year)
+        total_summary = TeamComparator.get_total_summary(year)
         teams = TeamComparator.get_teams(total_summary)
         num_teams = len(teams)
 
@@ -292,16 +291,10 @@ class BradleyTerryComparator(TeamComparator):
 
         vec = np.ones((num_teams, 1)) / num_teams
         if not kwargs.get("first_year"):
-            kwargs["first_year"] = True
-            kwargs["serialize_results"] = True
+            self.__rank(year - 1, iters, first_year=True)
 
-            # Dumb hack to look back at previous year
-            self.year -= 1
-            self.__rank(**kwargs)
-            self.year += 1
-
-            prev_year_rankings = pickle.load(
-                open(f"./predictions/{self.year-1}_bradleyterry_rankings.p", "rb")
+            prev_year_rankings: dict = pickle.load(
+                open(f"./predictions/{year-1}_bradleyterry_rankings.p", "rb")
             )
 
             for team, value in prev_year_rankings.items():
@@ -309,17 +302,17 @@ class BradleyTerryComparator(TeamComparator):
         vec /= sum(vec)
 
         # Perform iterations of Bradley-Terry process
-        for _ in range(self.iters):
+        for _ in range(iters):
             new_vec = np.copy(vec)
             # For each entry, p_i = (number of wins for team i) / sum((total games vs team j) / (pr_i + pr_j))
-            for j in range(num_teams):
-                numerator = sum(mat[j])
+            for i in range(num_teams):
+                numerator = sum(mat[i])
                 denominator = sum(
-                    (mat[j, k] + mat[k, j]) / (vec[j] + vec[k])
-                    for k in range(num_teams)
-                    if k != j
+                    (mat[i, j] + mat[j, i]) / (vec[i] + vec[j])
+                    for j in range(num_teams)
+                    if j != i
                 )
-                new_vec[j] = numerator / denominator
+                new_vec[i] = numerator / denominator
 
             # Make sure no vector entries are 0.
             # If they are, set them to 1 / num_teams**2
@@ -339,11 +332,11 @@ class BradleyTerryComparator(TeamComparator):
         for item in sorted_pairs:
             rankings[item[1]] = item[0]
 
-        TeamComparator.serialize_results(self.year, "bradleyterry", rankings, vec)
+        TeamComparator.serialize_results(year, "bradleyterry", rankings, vec)
 
-    def __build_model(self):
+    def __build_model(self, year: int):
         self._rankings = pickle.load(
-            open(f"./predictions/{self.year}_bradleyterry_rankings.p", "rb")
+            open(f"./predictions/{year}_bradleyterry_rankings.p", "rb")
         )
 
     def compare_teams(self, teamA: TeamSeeding, teamB: TeamSeeding) -> float:
@@ -366,12 +359,10 @@ class EloComparator(TeamComparator):
     """
 
     def __init__(self, year: int):
-        self.year = year
+        self.__rank(year, serialize_results=True)
+        self.__build_model(year)
 
-        self.__rank(serialize_results=True)
-        self.__build_model()
-
-    def __rank(self, **kwargs: dict[str, bool | int]):
+    def __rank(self, year: int, **kwargs: dict[str, bool | int]):
         """
         Uses Elo model to create a vector ranking all teams.
 
@@ -384,7 +375,7 @@ class EloComparator(TeamComparator):
             The default is 1750.
         """
 
-        total_summary = TeamComparator.get_total_summary(self.year)
+        total_summary = TeamComparator.get_total_summary(year)
         teams = TeamComparator.get_teams(total_summary)
         num_teams = len(teams)
 
@@ -393,16 +384,10 @@ class EloComparator(TeamComparator):
 
         # Decide whether to look back or not
         if not kwargs.get("first_year"):
-            kwargs["first_year"] = True
-            kwargs["serialize_results"] = True
+            self.__rank(year - 1, first_year=True)
 
-            # Dumb hack to look back at previous year
-            self.year -= 1
-            self.__rank(**kwargs)
-            self.year += 1
-
-            prev_year_ratings = pickle.load(
-                open(f"./predictions/{self.year-1}_elo_rankings.p", "rb")
+            prev_year_ratings: dict = pickle.load(
+                open(f"./predictions/{year-1}_elo_rankings.p", "rb")
             )
 
             for team, value in prev_year_ratings.items():
@@ -443,13 +428,11 @@ class EloComparator(TeamComparator):
         for item in sorted_pairs:
             rankings[item[1]] = item[0]
 
-        TeamComparator.serialize_results(self.year, "elo", rankings, ratings)
+        TeamComparator.serialize_results(year, "elo", rankings, ratings)
 
-    def __build_model(self):
-        self._rankings = pickle.load(
-            open(f"./predictions/{self.year}_elo_rankings.p", "rb")
-        )
-        self._vec = pickle.load(open(f"./predictions/{self.year}_elo_vector.p", "rb"))
+    def __build_model(self, year: int):
+        self._rankings = pickle.load(open(f"./predictions/{year}_elo_rankings.p", "rb"))
+        self._vec = pickle.load(open(f"./predictions/{year}_elo_vector.p", "rb"))
 
     def compare_teams(self, teamA: TeamSeeding, teamB: TeamSeeding) -> float:
         qA = 10 ** (self._rankings[teamA.name] / 400)
