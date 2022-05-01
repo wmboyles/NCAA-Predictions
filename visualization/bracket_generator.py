@@ -1,4 +1,5 @@
 from math import log2
+from os import system
 
 
 def make_bracket(
@@ -62,11 +63,12 @@ def make_bracket(
                 x2 = bracket_x - j * entry_width
 
                 # Draw lines for next level
+                count = 2 * num_teams * (2**j - 1) >> j
                 file.write(
-                    f"\t\draw ({x1},{y3}) to node[above]{{SOMETEAM}} ({x1+entry_width},{y3});\n"
+                    f"\t\draw ({x1},{y3}) to node[above]{{{count + 2*i}}} ({x1+entry_width},{y3});\n"
                 )
                 file.write(
-                    f"\t\draw ({x2},{y3}) to node[above]{{SOMETEAM}} ({x2-entry_width},{y3});\n"
+                    f"\t\draw ({x2},{y3}) to node[above]{{{count + 2*i + 1}}} ({x2-entry_width},{y3});\n"
                 )
 
                 # Draw lines connecting adjacent pairs of teams
@@ -78,7 +80,7 @@ def make_bracket(
         winner_y = bracket_y / 2 + 2 * whitespace_buffer
         winner_stetch = 1.5
         file.write(
-            f"\t\draw[thick] ({(bracket_x - winner_stetch*entry_width)/2},{winner_y}) to node[above]{{\Large SOMETEAM}} ({(bracket_x + winner_stetch*entry_width)/2},{winner_y});\n"
+            f"\t\draw[thick] ({(bracket_x - winner_stetch*entry_width)/2},{winner_y}) to node[above]{{\Large {2*num_teams - 2}}} ({(bracket_x + winner_stetch*entry_width)/2},{winner_y});\n"
         )
 
         # End tikz document
@@ -89,5 +91,7 @@ def make_bracket(
         )
 
 
-make_bracket(64, "python_bracket.tex", "Python Bracket")
-# xelatex python_bracket.tex
+filename = "python_bracket.tex"
+make_bracket(64, filename, "Enumerated Tournament")
+system(f"xelatex {filename}")
+system(f"start {filename[:-4]}.pdf")
