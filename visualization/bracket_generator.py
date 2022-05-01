@@ -1,4 +1,4 @@
-from math import log2
+import math
 from os import system
 
 
@@ -10,14 +10,19 @@ def make_bracket(
     entry_width: int = 3,
     title_height: int = 2,
 ):
+    # Check that num_teams is a positive integer
+    if type(num_teams) is not int or num_teams <= 0:
+        raise ValueError("Number of teams must be a positive integer")
+
     # Check that num_teams is a power of 2
     if num_teams & (num_teams - 1) != 0:
         raise ValueError("Number of teams must be a power of 2")
-    depth = int(log2(num_teams))
+
+    total_depth = int(math.log2(num_teams))
 
     # Calculate size of bracket bounding rectangle
-    total_width = 2 * entry_width * depth + 4 * whitespace_buffer
-    total_height = num_teams // 2 + 2 * whitespace_buffer - 1 + title_height
+    total_width = 2 * entry_width * total_depth + 4 * whitespace_buffer
+    total_height = num_teams // 2 + 2 * whitespace_buffer + title_height - 1
     bounding_x = total_width - whitespace_buffer
     bounding_y = total_height - whitespace_buffer
     # Calculating the maximum coordinates of the bracket becomes useful
@@ -27,54 +32,61 @@ def make_bracket(
     # Create bracket by opening tikz file
     with open(filename, "w") as file:
         # Start tikz document
-        file.write(
-            r"""\documentclass[tikz]{standalone}
-
-\usetikzlibrary{positioning}
-
-\begin{document}
-\begin{tikzpicture}
-"""
+        file.writelines(
+            [
+                "\\documentclass[tikz]{standalone}\n\n",
+                "\\usetikzlibrary{positioning}\n\n",
+                "\\begin{document}\n",
+                "\\begin{tikzpicture}\n",
+            ],
         )
 
-        # Draw bounding rectangle
-        file.write(
-            f"\t\draw (-{whitespace_buffer},-{whitespace_buffer}) rectangle ({bounding_x},{bounding_y});\n"
-        )
-
-        # Draw title
-        file.write(
-            f"\t\\node at ({bracket_x/2},{total_height-title_height-0.5}) {{\Huge {title}}};\n"
+        # Draw bounding rectangle and title
+        file.writelines(
+            [
+                f"\t\draw {-whitespace_buffer,-whitespace_buffer} rectangle {bounding_x,bounding_y};\n",
+                f"\t\\node at {bracket_x/2,total_height-title_height-0.5} {{\Huge {title}}};\n",
+            ]
         )
 
         # Draw Levels 0,...,depth-1
-        for j in range(depth):
-            for i in range(num_teams >> (j + 1)):
-                # Coordinates for connecting look like: power_of_2*i + yp
-                # These give the yp for the first and second coordinates below
-                yp1 = (2 ** (j - 1) - 1) / 2
-                yp2 = (3 * (2 ** (j - 1)) - 1) / 2
-                # Y coordinates
-                y1 = 2**j * i + yp1
-                y2 = 2**j * i + yp2
-                y3 = (y1 + y2) / 2
-                # X coordinates
-                x1 = j * entry_width
-                x2 = bracket_x - j * entry_width
+        for depth in range(total_depth):
+            # Coordinates for connecting look like: power_of_2*i + yp
+            # These give the yp for adjacent teams and the average yp for drawing next level line
+            yp_bottom = (2 ** (depth - 1) - 1) / 2
+            yp_top = (3 * (2 ** (depth - 1)) - 1) / 2
+            yp_mid = (yp_bottom + yp_top) / 2
 
-                # Draw lines for next level
-                count = 2 * num_teams * (2**j - 1) >> j
-                file.write(
-                    f"\t\draw ({x1},{y3}) to node[above]{{{count + 2*i}}} ({x1+entry_width},{y3});\n"
-                )
-                file.write(
-                    f"\t\draw ({x2},{y3}) to node[above]{{{count + 2*i + 1}}} ({x2-entry_width},{y3});\n"
-                )
+            # X coordinates for creating left and right halves of bracket
+            x_left = depth * entry_width
+            x_right = bracket_x - depth * entry_width
+
+            # Count for enumerating entries in bracket
+            count = 2 * num_teams * (2**depth - 1) >> depth
+
+            for i in range(num_teams >> (depth + 1)):
+                # Y coordinates
+                y_bottom = 2**depth * i + yp_bottom
+                y_top = 2**depth * i + yp_top
+                y_mid = 2**depth * i + yp_mid
 
                 # Draw lines connecting adjacent pairs of teams
-                if j > 0:
-                    file.write(f"\t\draw ({x1},{y1}) to ({x1},{y2});\n")
-                    file.write(f"\t\draw ({x2},{y1}) to ({x2},{y2});\n")
+                # Don't have anything to connect from for the first level
+                if depth > 0:
+                    file.writelines(
+                        [
+                            f"\t\draw {x_left, y_bottom} to {x_left, y_top};\n",
+                            f"\t\draw {x_right, y_bottom} to {x_right, y_top};\n",
+                        ]
+                    )
+
+                # Draw lines for next level
+                file.writelines(
+                    [
+                        f"\t\draw {x_left, y_mid} to node[above]{{{count + 2*i}}} {x_left + entry_width, y_mid};\n",
+                        f"\t\draw {x_right, y_mid} to node[above]{{{count + 2*i + 1}}} {x_right - entry_width, y_mid};\n",
+                    ]
+                )
 
         # Draw line for winner
         winner_y = bracket_y / 2 + 2 * whitespace_buffer
@@ -84,10 +96,11 @@ def make_bracket(
         )
 
         # End tikz document
-        file.write(
-            r"""\end{tikzpicture}
-\end{document}
-"""
+        file.writelines(
+            [
+                "\\end{tikzpicture}\n",
+                "\\end{document}\n",
+            ]
         )
 
 
