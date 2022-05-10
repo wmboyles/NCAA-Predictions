@@ -2,11 +2,11 @@
 This is the main script for the NCAA predictions project.
 One can select a comparator to compare teams and simulate a tournament.
 """
+from os import system
 
-import comparison.team_comparators as team_comparators
-from comparison.tournament import Tournament
+from comparison import Tournament, PageRankComparator
+from visualization.bracket_generator import make_bracket
 
-year = 2022
 
 tourney = Tournament(
     [
@@ -89,4 +89,11 @@ tourney = Tournament(
     ]
 )
 
-tourney.simulate(team_comparators.EloComparator(year))
+year = 2022
+filename = "python_bracket.tex"
+comparator = PageRankComparator(year)
+
+make_bracket(tourney, comparator, filename=filename)
+system(f"xelatex {filename}")
+system(f"rm {filename[:-4]}.log {filename[:-4]}.aux")
+system(f"start {filename[:-4]}.pdf")

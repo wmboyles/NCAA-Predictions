@@ -1,16 +1,18 @@
 import math
-from os import system
+
+from comparison import Tournament, TeamComparator
 
 
 def make_bracket(
-    num_teams: int,
+    tournament: Tournament,
+    comparator: TeamComparator,
     filename: str,
-    title: str,
     whitespace_buffer: int = 1,
-    entry_width: int = 3,
+    entry_width: int = 4,
     title_height: int = 2,
 ):
     # Check that num_teams is a positive integer
+    num_teams = len(tournament)
     if type(num_teams) is not int or num_teams <= 0:
         raise ValueError("Number of teams must be a positive integer")
 
@@ -45,12 +47,15 @@ def make_bracket(
         file.writelines(
             [
                 f"\t\draw {-whitespace_buffer,-whitespace_buffer} rectangle {bounding_x,bounding_y};\n",
-                f"\t\\node at {bracket_x/2,total_height-title_height-0.5} {{\Huge {title}}};\n",
+                f"\t\\node at {bracket_x/2,total_height-title_height-0.5} {{\Huge {comparator.__class__.__name__} Bracket}};\n",
             ]
         )
 
         # Draw Levels 0,...,depth-1
+        # These levels also correspond to deeper rounds in the tournament
         for depth in range(total_depth):
+            teams_remaining = len(tournament)
+
             # Coordinates for connecting look like: power_of_2*i + yp
             # These give the yp for adjacent teams and the average yp for drawing next level line
             yp_bottom = (2 ** (depth - 1) - 1) / 2
@@ -61,8 +66,8 @@ def make_bracket(
             x_left = depth * entry_width
             x_right = bracket_x - depth * entry_width
 
-            # Count for enumerating entries in bracket
-            count = 2 * num_teams * (2**depth - 1) >> depth
+            # # Count for enumerating entries in bracket
+            # count = 2 * num_teams * (2**depth - 1) >> depth
 
             for i in range(num_teams >> (depth + 1)):
                 # Y coordinates
@@ -81,18 +86,24 @@ def make_bracket(
                     )
 
                 # Draw lines for next level
+                left_team = tournament[teams_remaining // 2 - i - 1]
+                right_team = tournament[teams_remaining - i - 1]
                 file.writelines(
                     [
-                        f"\t\draw {x_left, y_mid} to node[above]{{{count + 2*i}}} {x_left + entry_width, y_mid};\n",
-                        f"\t\draw {x_right, y_mid} to node[above]{{{count + 2*i + 1}}} {x_right - entry_width, y_mid};\n",
+                        f"\t\draw {x_left, y_mid} to node[above]{{{f'({left_team.seed}) ' + left_team.name}}} {x_left + entry_width, y_mid};\n",
+                        f"\t\draw {x_right, y_mid} to node[above]{{{f'({right_team.seed}) ' + right_team.name}}} {x_right - entry_width, y_mid};\n",
                     ]
                 )
+
+            # Play a simulated round of the tournament, eliminating half the teams
+            tournament.play_round(comparator)
 
         # Draw line for winner
         winner_y = bracket_y / 2 + 2 * whitespace_buffer
         winner_stetch = 1.5
+        winning_team = tournament[0]
         file.write(
-            f"\t\draw[thick] ({(bracket_x - winner_stetch*entry_width)/2},{winner_y}) to node[above]{{\Large {2*num_teams - 2}}} ({(bracket_x + winner_stetch*entry_width)/2},{winner_y});\n"
+            f"\t\draw[thick] ({(bracket_x - winner_stetch*entry_width)/2},{winner_y}) to node[above]{{\Large {f'({winning_team.seed}) ' + winning_team.name}}} ({(bracket_x + winner_stetch*entry_width)/2},{winner_y});\n"
         )
 
         # End tikz document
@@ -102,9 +113,3 @@ def make_bracket(
                 "\\end{document}\n",
             ]
         )
-
-
-filename = "python_bracket.tex"
-make_bracket(64, filename, "Enumerated Tournament")
-system(f"xelatex {filename}")
-system(f"start {filename[:-4]}.pdf")
