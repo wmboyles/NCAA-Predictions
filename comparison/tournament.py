@@ -80,13 +80,14 @@ class Tournament:
     def __len__(self):
         return len(self.tourney)
 
-    def __getitem__(self, index):
+    def __getitem__(self, index: int) -> TeamSeeding:
         return self.tourney[index]
 
-    def __play_round(self, comparator: TeamComparator):
+    def play_round(self, comparator: TeamComparator):
         """
-        Helper function used to play a single round of the tournament.
+        Play a single round of the tournament, eliminating the losing teams.
         """
+
         new_tourney: list[TeamSeeding] = []
         for i in range(0, len(self), 2):
             teamA, teamB = self[i], self[i + 1]
@@ -113,5 +114,5 @@ class Tournament:
         """
 
         while len(self) > 1:
-            self.__play_round(comparator)
+            self.play_round(comparator)
             print("-" * 50)

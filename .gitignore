@@ -1,4 +1,8 @@
+# binary python and cache
 *.p
 *.pyc
-#games/*/*.csv
 __pycache__/
+
+# tex intermediate files
+*.aux
+*.log

@@ -54,7 +54,7 @@ class TeamComparator(ABC):
             print(f"--- SUCCESS: Summary created for {year}")
             print("--- Trying again with newly created summary")
 
-            return TeamComparator.get_total_summary(cls, year)
+            return cls.get_total_summary(year)
 
         return total_summary
 
