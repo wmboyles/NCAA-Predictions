@@ -90,8 +90,8 @@ def make_bracket(
                 right_team = tournament[teams_remaining - i - 1]
                 file.writelines(
                     [
-                        f"\t\draw {x_left, y_mid} to node[above]{{{f'({left_team.seed}) ' + left_team.name}}} {x_left + entry_width, y_mid};\n",
-                        f"\t\draw {x_right, y_mid} to node[above]{{{f'({right_team.seed}) ' + right_team.name}}} {x_right - entry_width, y_mid};\n",
+                        f"\t\draw {x_left, y_mid} to node[above]{{({left_team.seed}) {left_team.name}}} {x_left + entry_width, y_mid};\n",
+                        f"\t\draw {x_right, y_mid} to node[above]{{({right_team.seed}) {right_team.name}}} {x_right - entry_width, y_mid};\n",
                     ]
                 )
 
