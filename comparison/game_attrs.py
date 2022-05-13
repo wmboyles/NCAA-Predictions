@@ -28,6 +28,8 @@ class GameValues(Enum):
     To use their value, you'd write game[GameValue.ITEM.value]
 
     In all instances, a high value of game[GameValue.ITEM.value] means a better team
+
+    NOTE: These HOME_TEAM and AWAY_TEAM do not literally tell us if a team is home or away
     """
 
     HOME_TEAM = 0  # Name of first (called home but not always) team

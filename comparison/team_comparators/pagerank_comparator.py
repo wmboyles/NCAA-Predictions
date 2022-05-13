@@ -56,11 +56,10 @@ class PageRankComparator(TeamComparator):
         for game in total_summary:
             # We only want to count games where both teams are D1 (in teams list)
             # We choose to only look at games where the first team won so we don't double-count games
-            if (
-                game[GameValues.HOME_TEAM.value] in teams
-                and game[GameValues.AWAY_TEAM.value] in teams
-                and game[GameValues.WIN_LOSS.value]
-            ):
+            # NOTE: These HOME_TEAM and AWAY_TEAM do not literally tell us if a team is home or away
+            teamA = game[GameValues.HOME_TEAM.value]
+            teamB = game[GameValues.AWAY_TEAM.value]
+            if teamA in teams and teamB in teams and game[GameValues.WIN_LOSS.value]:
                 # Game winner
                 # Since we know the first/home team won, we can already assign the weight for that
                 home_pr_score, away_pr_score = GameWeights.WEIGHTS.value[0], 0.0
@@ -96,8 +95,8 @@ class PageRankComparator(TeamComparator):
                     away_pr_score += GameWeights.WEIGHTS.value[4]
 
                 # Add weighted score for this game to matrix for both teams
-                home_idx = teams.index(game[GameValues.HOME_TEAM.value])
-                away_idx = teams.index(game[GameValues.AWAY_TEAM.value])
+                home_idx = teams.index(teamA)
+                away_idx = teams.index(teamB)
 
                 mat[home_idx, away_idx] += home_pr_score
                 mat[away_idx, home_idx] += away_pr_score

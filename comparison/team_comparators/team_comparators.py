@@ -74,8 +74,10 @@ class TeamComparator(ABC):
         outfile2 = f"./predictions/{year}_{model_name}_vector.p"
         os.makedirs(os.path.dirname(outfile1), exist_ok=True)
 
-        pickle.dump(rankings, open(outfile1, "wb"))
-        pickle.dump(vec, open(outfile2, "wb"))
+        if rankings:
+            pickle.dump(rankings, open(outfile1, "wb"))
+        if vec:
+            pickle.dump(vec, open(outfile2, "wb"))
 
 
 class HydridComparator(TeamComparator):
