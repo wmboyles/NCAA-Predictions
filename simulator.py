@@ -4,11 +4,11 @@ One can select a comparator to compare teams and simulate a tournament.
 """
 from os import system
 
-from comparison import Tournament, PageRankComparator
+import comparison
 from visualization.bracket_generator import make_bracket
 
 
-tourney = Tournament(
+tourney = comparison.Tournament(
     [
         #
         # Quadrant 1
@@ -91,7 +91,7 @@ tourney = Tournament(
 
 year = 2022
 filename = "python_bracket.tex"
-comparator = PageRankComparator(year)
+comparator = comparison.team_comparators.PageRankComparator(year)
 
 make_bracket(tourney, comparator, filename=filename)
 system(f"xelatex {filename}")
