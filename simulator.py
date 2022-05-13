@@ -91,7 +91,7 @@ tourney = comparison.Tournament(
 
 year = 2022
 filename = "python_bracket.tex"
-comparator = comparison.team_comparators.PageRankComparator(year)
+comparator = comparison.team_comparators.PathWeightComparator(year)
 
 make_bracket(tourney, comparator, filename=filename)
 system(f"xelatex {filename}")
