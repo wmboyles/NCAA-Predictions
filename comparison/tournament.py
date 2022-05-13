@@ -6,7 +6,7 @@ It uses a team comparator to simulate rounds of the tournament to make predictio
 from typing import Iterator
 
 from .game_attrs import TeamSeeding
-from .team_comparators import TeamComparator
+from .team_comparators.team_comparators import TeamComparator
 
 
 class Tournament:

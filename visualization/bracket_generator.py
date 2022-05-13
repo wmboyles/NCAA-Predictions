@@ -1,11 +1,11 @@
 import math
 
-from comparison import Tournament, TeamComparator
+import comparison
 
 
 def make_bracket(
-    tournament: Tournament,
-    comparator: TeamComparator,
+    tournament: comparison.Tournament,
+    comparator: comparison.TeamComparator,
     filename: str,
     whitespace_buffer: int = 1,
     entry_width: int = 4,
