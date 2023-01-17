@@ -73,7 +73,7 @@ class PathWeightComparator(TeamComparator):
             G[u][v]["weight"] = 1 / G[u][v]["weight"] ** 2
 
         # Calculate all pairs shortest paths
-        # We case efficiently use Dijsktra's here b/c the graph is sparse w/ |E| = O(|V|)
+        # We can efficiently use Dijsktra's here b/c the graph is sparse w/ |E| = O(|V|)
         min_pairs = {start: dijkstra(G, start) for start in G.nodes}
 
         TeamComparator.serialize_results(year, "path_weights", min_pairs, None)
