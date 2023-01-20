@@ -12,7 +12,6 @@ from .team_comparators.team_comparators import TeamComparator
 class Tournament:
     """
     This object represents a single-elimination tournament.
-    The
     There must be a power of 2 number of teams to create the tournament.
     """
 

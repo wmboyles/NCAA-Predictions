@@ -14,6 +14,7 @@ def resistance(G: nx.DiGraph) -> dict[tuple, float]:
     """
 
     # Depth-first search to get a list of all paths from start to end
+    # NOTE: This method is extremely slow on even moderately sized graphs
     def find_all_paths(start):
         stack: list[tuple] = [(start, [start])]
         paths: list[list] = []
@@ -60,6 +61,9 @@ class ResistanceComparator(TeamComparator):
     3. Compute the resistance for all pairs of teams.
     4. Pr(A beats B) = (1 - resistance(A -> B)) / (resistance(A -> B) + resistance(B -> A))
                      = resistance(B -> A) / (resistance(A -> B) + resistance(B -> A))
+
+    NOTE: This method is extremely slow on even moderately sized graphs.
+    You will not be able to run this comparator on an entire year of D1, and probably not even on a single conference.
     """
 
     def __init__(self, year: int):

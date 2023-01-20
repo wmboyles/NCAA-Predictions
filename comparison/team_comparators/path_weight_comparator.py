@@ -69,6 +69,7 @@ class PathWeightComparator(TeamComparator):
                     G.add_edge(teamA, teamB, weight=1)
 
         # Invert weights of all edges
+        # NOTE: The squared part is just there to make the model more confident in its predictions.
         for u, v in G.edges:
             G[u][v]["weight"] = 1 / G[u][v]["weight"] ** 2
 

@@ -60,6 +60,7 @@ class GameWeights(Enum):
         * Turnover percentage
         * Offensive rebound percentage
         * Free throw rate.
+    
     These weights can be changed to change the importance of these factors in each game.
     """
 
