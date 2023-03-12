@@ -9,7 +9,7 @@ import requests
 import bs4
 import csv
 import os
-
+from time import sleep
 
 def get_team_file(fmt_team: str, year: int):
     """
@@ -19,14 +19,18 @@ def get_team_file(fmt_team: str, year: int):
     """
 
     # format the url to the specific team and year
+    # TODO: Women's teams?
+    # https://www.sports-reference.com/cbb/schools/iowa/men/2022-gamelogs.html
     url = (
-        f"https://www.sports-reference.com/cbb/schools/{fmt_team}/{year}-gamelogs.html"
+        f"https://www.sports-reference.com/cbb/schools/{fmt_team}/men/{year}-gamelogs.html"
     )
 
     # TODO: Maybe try/catch here for timeout?
+    sleep(10)  # Don't spam the server
     res = requests.get(url)
     if res is None or not res.ok:  # If we don't get a good response
-        print(f"----WARNING: {fmt_team} got no/bad response from SportsReference.com")
+        print(f"----WARNING ({res.status_code}): {fmt_team} got no/bad response from SportsReference.com")
+        # print(res.text)
         return
 
     soup = bs4.BeautifulSoup(res.text, features="html.parser")
