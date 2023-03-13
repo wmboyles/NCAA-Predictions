@@ -8,6 +8,6 @@ comparator = comparison.team_comparators.SomeComparator(...)
 tourney.simulate(comparator)
 """
 
-from .game_attrs import TeamSeeding
+from .game_attrs import Team
 from .tournament import Tournament
 from .team_comparators import TeamComparator

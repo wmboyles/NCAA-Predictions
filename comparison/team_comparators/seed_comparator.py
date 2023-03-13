@@ -1,10 +1,8 @@
 from math import sqrt
-
 from scipy.stats import norm
 
-from .team_comparators import TeamComparator
-
-from ..game_attrs import TeamSeeding
+from .team_comparator import TeamComparator
+from ..game_attrs import Team
 
 
 class SeedComparator(TeamComparator):
@@ -13,18 +11,20 @@ class SeedComparator(TeamComparator):
     The lower seeded team will always have better odds of winning.
     """
 
-    def __init__(self, stdev=None):
+    def __init__(self, stdev=None, year=0):
         """
         Create seed comparator with optional standard deviation.
         If no standard deviation is provided, the default of sqrt(68/3) (i.e. the standard deviation of [1,2,...,16]) is used.
         """
+
+        super().__init__(year)
 
         self.stdev = stdev
         if stdev is None:
             # standard deviation of [1,2,...,16]
             self.stdev = sqrt(68 / 3)
 
-    def compare_teams(self, teamA: TeamSeeding, teamB: TeamSeeding) -> float:
+    def compare_teams(self, teamA: Team, teamB: Team) -> float:
         """
         Compare two teams by finding normcdf(mean=seedA - seedB, stdev=stdev) from -inf to 0.
         This implicitly assumes that each team's ability in a game is normal with mean of their seed and standard deviation of stdev / sqrt(2).

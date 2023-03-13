@@ -1,12 +1,11 @@
 import pickle
 from math import sqrt
-
 import numpy as np
 from scipy.stats import chi2
+import os
 
-from .team_comparators import TeamComparator
-
-from ..game_attrs import GameValues, GameWeights, TeamSeeding
+from .team_comparator import TeamComparator
+from ..game_attrs import GameValues, GameWeights, Team
 
 
 class PageRankComparator(TeamComparator):
@@ -27,8 +26,11 @@ class PageRankComparator(TeamComparator):
     """
 
     def __init__(self, year: int, iters: int = 10000, alpha: float = 0.85):
-        # Build PageRank stuff
-        self.__rank(year, iters, alpha, serialize_results=True, first_year=True)
+        super().__init__(year)
+
+        if not os.path.exists(f"./predictions/{year}_pagerank_rankings.p"):
+            self.__rank(year, iters, alpha, serialize_results=True, first_year=True)
+
         self.__build_model(year)
 
     def __rank(self, year: int, iters: int, alpha: float, **kwargs: dict[str, bool]):
@@ -131,14 +133,14 @@ class PageRankComparator(TeamComparator):
         self._df = chi2.fit(vec)[0]
         self._min_vec, self._max_vec = min(vec)[0], max(vec)[0]
 
-    def compare_teams(self, teamA: TeamSeeding, teamB: TeamSeeding) -> float:
+    def compare_teams(self, a: Team, b: Team) -> float:
         """
         Compare two teams from the same year.
 
-        Returns the probability that teamA will win.
+        Returns the probability that a will win.
         """
 
-        rankA, rankB = self._rankings[teamA.name], self._rankings[teamB.name]
+        rankA, rankB = self._rankings[a.name], self._rankings[b.name]
 
         max_cdf = chi2.cdf(self._max_vec, df=self._df)
         min_cdf = chi2.cdf(self._min_vec, df=self._df)

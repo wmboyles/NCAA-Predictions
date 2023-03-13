@@ -1,10 +1,8 @@
 import pickle
-
 import numpy as np
 
-from .team_comparators import TeamComparator
-
-from ..game_attrs import GameValues, TeamSeeding
+from .team_comparator import TeamComparator
+from ..game_attrs import GameValues, Team
 
 
 class BradleyTerryComparator(TeamComparator):
@@ -14,6 +12,7 @@ class BradleyTerryComparator(TeamComparator):
     """
 
     def __init__(self, year: int, iters: int = 1):
+        super().__init__(year)
         self.__rank(year, iters)
         self.__build_model(year)
 
@@ -95,14 +94,14 @@ class BradleyTerryComparator(TeamComparator):
             open(f"./predictions/{year}_bradleyterry_rankings.p", "rb")
         )
 
-    def compare_teams(self, teamA: TeamSeeding, teamB: TeamSeeding) -> float:
+    def compare_teams(self, a: Team, b: Team) -> float:
         """
         Compare two teams from the same year.
 
         Returns the probability that teamA will win.
         """
 
-        scoreA = self._rankings[teamA.name]
-        scoreB = self._rankings[teamB.name]
+        scoreA = self._rankings[a.name]
+        scoreB = self._rankings[b.name]
 
         return scoreA / (scoreA + scoreB)

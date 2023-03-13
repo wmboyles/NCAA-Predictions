@@ -1,11 +1,11 @@
 import pickle
 from math import inf
-
 import networkx as nx
 from pqdict import minpq
+import os
 
-from ..game_attrs import GameValues, TeamSeeding
-from .team_comparators import TeamComparator
+from ..game_attrs import GameValues, Team
+from .team_comparator import TeamComparator
 
 
 def dijkstra(graph: nx.DiGraph, start) -> dict:
@@ -46,7 +46,11 @@ class PathWeightComparator(TeamComparator):
     """
 
     def __init__(self, year: int):
-        self.__rank(year)
+        super().__init__(year)
+
+        if not os.path.exists(f"./predictions/{year}_path_weights_rankings.p"):
+            self.__rank(year)
+
         self.__build_model(year)
 
     def __rank(self, year: int):
@@ -61,7 +65,7 @@ class PathWeightComparator(TeamComparator):
             # NOTE: These HOME_TEAM and AWAY_TEAM do not literally tell us if a team is home or away
             teamA = game[GameValues.HOME_TEAM.value]
             teamB = game[GameValues.AWAY_TEAM.value]
-            print(teamA, teamB, game[GameValues.WIN_LOSS.value])
+            # print(teamA, teamB, game[GameValues.WIN_LOSS.value])
             if teamA in teams and teamB in teams and game[GameValues.WIN_LOSS.value]:
                 if G.has_edge(teamA, teamB):
                     G[teamA][teamB]["weight"] += 1
@@ -84,8 +88,11 @@ class PathWeightComparator(TeamComparator):
             open(f"./predictions/{year}_path_weights_rankings.p", "rb")
         )
 
-    def compare_teams(self, teamA: TeamSeeding, teamB: TeamSeeding) -> float:
-        sp_AB = self._mat[teamA.name][teamB.name]
-        sp_BA = self._mat[teamB.name][teamA.name]
+    def compare_teams(self, a: Team, b: Team) -> float:
+        if a == b:
+            return 0.5
+
+        sp_AB = self._mat[a.name][b.name]
+        sp_BA = self._mat[b.name][a.name]
 
         return sp_BA / (sp_AB + sp_BA)

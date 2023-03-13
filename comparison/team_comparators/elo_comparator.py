@@ -1,10 +1,8 @@
 import pickle
-
 import numpy as np
 
-from .team_comparators import TeamComparator
-
-from ..game_attrs import GameValues, TeamSeeding
+from .team_comparator import TeamComparator
+from ..game_attrs import GameValues, Team
 
 
 class EloComparator(TeamComparator):
@@ -14,6 +12,7 @@ class EloComparator(TeamComparator):
     """
 
     def __init__(self, year: int):
+        super().__init__(year)
         self.__rank(year)
         self.__build_model(year)
 
@@ -88,9 +87,9 @@ class EloComparator(TeamComparator):
         self._rankings = pickle.load(open(f"./predictions/{year}_elo_rankings.p", "rb"))
         self._vec = pickle.load(open(f"./predictions/{year}_elo_vector.p", "rb"))
 
-    def compare_teams(self, teamA: TeamSeeding, teamB: TeamSeeding) -> float:
-        qA = 10 ** (self._rankings[teamA.name] / 400)
-        qB = 10 ** (self._rankings[teamB.name] / 400)
+    def compare_teams(self, a: Team, b: Team) -> float:
+        qA = 10 ** (self._rankings[a.name] / 400)
+        qB = 10 ** (self._rankings[b.name] / 400)
 
         eA = qA / (qA + qB)
 

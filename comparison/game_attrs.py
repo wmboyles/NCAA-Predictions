@@ -1,24 +1,20 @@
 """
 This module contains enums that represent attributes of a game and their relative weights.
-It also contains a class to represent the state of a team within a tournament.
+It also contains a class to represent a Team within a Tournament.
 """
 
 from dataclasses import dataclass
 from enum import Enum
 
 
-@dataclass
-class TeamSeeding:
+@dataclass(frozen=True)
+class Team:
     """
-    In a tournament, each team has 3 attributes we track:
-    * name: the name of the team
-    * seed: the seed of the team as given by the tournament bracket
-    * probability: the probability of the team being in the current position in the tournament
+    A Team is an entity that competes in a Tournament.
     """
 
     name: str
     seed: int
-    probability: float
 
 
 class GameValues(Enum):
@@ -60,8 +56,9 @@ class GameWeights(Enum):
         * Turnover percentage
         * Offensive rebound percentage
         * Free throw rate.
-    
+
     These weights can be changed to change the importance of these factors in each game.
     """
 
+    # TODO: Don't use list format so there aren't have magic number indexes in the code
     WEIGHTS = [50, 13.3333, 6.6666, 8.3333, 5]

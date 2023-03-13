@@ -1,64 +1,77 @@
-import math
+from math import log2
+from comparison import Tournament, TeamComparator
 
-import comparison
 
+def make_bracket(tournament: Tournament, comparator: TeamComparator, **kwargs):
+    """
+    Draw a filled-in bracket in LaTeX using the TikZ library.
+    Compile the LaTeX file to a PDF and view the bracket.
 
-def make_bracket(
-    tournament: comparison.Tournament,
-    comparator: comparison.TeamComparator,
-    filename: str,
-    whitespace_buffer: int = 1,
-    entry_width: int = 4,
-    title_height: int = 2,
-):
-    # Check that num_teams is a positive integer
-    num_teams = len(tournament)
-    if type(num_teams) is not int or num_teams <= 0:
+    kwargs:
+        filename: Name of the file to write the LaTeX code to.
+        title: Title of the bracket.
+        whitespace_buffer: Amount of whitespace to leave around the bracket.
+        entry_width: Horizontal width of each entry in the bracket.
+        title_height: Height of the title of the bracket.
+
+    TODO: Separate out comparator and drawing logic by using a BracketDrawer class.
+    """
+
+    game_tourney = tournament
+
+    num_teams = len(game_tourney)
+    if num_teams <= 0:
         raise ValueError("Number of teams must be a positive integer")
-
-    # Check that num_teams is a power of 2
     if num_teams & (num_teams - 1) != 0:
         raise ValueError("Number of teams must be a power of 2")
 
-    total_depth = int(math.log2(num_teams))
+    comparator_class_name = comparator.__class__.__name__
+    default_kwargs = {
+        "filename": f"{comparator_class_name}.tex",
+        "title": f"{comparator_class_name} Bracket",
+        "whitespace_buffer": 1,
+        "entry_width": 4,
+        "title_height": 2,
+    }
+    default_kwargs.update(kwargs)
+
+    filename = default_kwargs["filename"]
+    title = default_kwargs["title"]
+    whitespace_buffer = default_kwargs["whitespace_buffer"]
+    entry_width = default_kwargs["entry_width"]
+    title_height = default_kwargs["title_height"]
+
+    total_depth = int(log2(num_teams))
 
     # Calculate size of bracket bounding rectangle
     total_width = 2 * entry_width * total_depth + 4 * whitespace_buffer
-    total_height = num_teams // 2 + 2 * whitespace_buffer + title_height - 1
+    total_height = num_teams // 2 + 2 * whitespace_buffer + 2 * title_height - 1
     bounding_x = total_width - whitespace_buffer
     bounding_y = total_height - whitespace_buffer
     # Calculating the maximum coordinates of the bracket becomes useful
     bracket_x = bounding_x - whitespace_buffer
     bracket_y = bounding_y
 
-    # Create bracket by opening tikz file
     with open(filename, "w") as file:
-        # Start tikz document
         file.writelines(
             [
+                # Start tikz document
                 "\\documentclass[tikz]{standalone}\n\n",
                 "\\usetikzlibrary{positioning}\n\n",
                 "\\begin{document}\n",
                 "\\begin{tikzpicture}\n",
-            ],
-        )
-
-        # Draw bounding rectangle and title
-        file.writelines(
-            [
+                # Draw bounding rectangle and title
                 f"\t\draw {-whitespace_buffer,-whitespace_buffer} rectangle {bounding_x,bounding_y};\n",
-                f"\t\\node at {bracket_x/2,total_height-title_height-0.5} {{\Huge {comparator.__class__.__name__} Bracket}};\n",
+                f"\t\\node at {bracket_x/2,total_height-title_height-0.5} {{\Huge \\underline{{{title}}}}};\n",
             ]
         )
 
-        # Draw Levels 0,...,depth-1
-        # These levels also correspond to deeper rounds in the tournament
         for depth in range(total_depth):
-            teams_remaining = len(tournament)
+            teams_remaining = len(game_tourney)
 
             # Coordinates for connecting look like: power_of_2*i + yp
             # These give the yp for adjacent teams and the average yp for drawing next level line
-            yp_bottom = (2 ** (depth - 1) - 1) / 2
+            yp_bottom = ((2 ** (depth - 1)) - 1) / 2
             yp_top = (3 * (2 ** (depth - 1)) - 1) / 2
             yp_mid = (yp_bottom + yp_top) / 2
 
@@ -66,10 +79,7 @@ def make_bracket(
             x_left = depth * entry_width
             x_right = bracket_x - depth * entry_width
 
-            # # Count for enumerating entries in bracket
-            # count = 2 * num_teams * (2**depth - 1) >> depth
-
-            for i in range(num_teams >> (depth + 1)):
+            for i in range(teams_remaining // 2):
                 # Y coordinates
                 y_bottom = 2**depth * i + yp_bottom
                 y_top = 2**depth * i + yp_top
@@ -80,14 +90,15 @@ def make_bracket(
                 if depth > 0:
                     file.writelines(
                         [
-                            f"\t\draw {x_left, y_bottom} to {x_left, y_top};\n",
-                            f"\t\draw {x_right, y_bottom} to {x_right, y_top};\n",
+                            f"\t\draw {x_left, y_bottom} to {x_left, y_top};\n"
+                            f"\t\draw {x_right, y_bottom} to {x_right, y_top};\n"
                         ]
                     )
 
                 # Draw lines for next level
-                left_team = tournament[teams_remaining // 2 - i - 1]
-                right_team = tournament[teams_remaining - i - 1]
+                round_winners = game_tourney.round_winners()
+                left_team = round_winners[teams_remaining // 2 - i - 1]
+                right_team = round_winners[teams_remaining - i - 1]
                 file.writelines(
                     [
                         f"\t\draw {x_left, y_mid} to node[above]{{({left_team.seed}) {left_team.name}}} {x_left + entry_width, y_mid};\n",
@@ -95,20 +106,16 @@ def make_bracket(
                     ]
                 )
 
-            # Play a simulated round of the tournament, eliminating half the teams
-            tournament.play_round(comparator)
+            game_tourney = game_tourney.play_round(comparator)
 
-        # Draw line for winner
-        winner_y = bracket_y / 2 + 2 * whitespace_buffer
+        # Draw line for winner and end document
+        winner_y = y_mid + 2 * whitespace_buffer
         winner_stetch = 1.5
-        winning_team = tournament[0]
-        file.write(
-            f"\t\draw[thick] ({(bracket_x - winner_stetch*entry_width)/2},{winner_y}) to node[above]{{\Large {f'({winning_team.seed}) ' + winning_team.name}}} ({(bracket_x + winner_stetch*entry_width)/2},{winner_y});\n"
-        )
+        winning_team = game_tourney.round_winners()[0]
 
-        # End tikz document
         file.writelines(
             [
+                f"\t\draw[thick] ({(bracket_x - winner_stetch*entry_width)/2},{winner_y}) to node[above]{{\Large \\bf {{{f'({winning_team.seed}) ' + winning_team.name}}}}} ({(bracket_x + winner_stetch*entry_width)/2},{winner_y});\n"
                 "\\end{tikzpicture}\n",
                 "\\end{document}\n",
             ]
