@@ -10,7 +10,7 @@ import os
 
 
 def resistance(
-    G: nx.DiGraph, max_paths=10_000, max_depth=5
+    G: nx.DiGraph, max_paths=10_000, max_depth=10
 ) -> dict[tuple[Team, Team], float]:
     """
     Compute the resistance between all pairs of nodes in a weighted digraph.
@@ -116,12 +116,26 @@ class ResistanceComparator(TeamComparator):
         if a == b:
             return 0.5
 
-        try:
-            R_AB = self._mat[a.name][b.name]
-            R_BA = self._mat[b.name][a.name]
-        except KeyError:
-            # For the 353 teams in Division I, you'd need max_paths = 179_324 to have a <50% chance of this not happening
-            print(f"WARNING: {a.name} and {b.name} are not comparable via resistance")
-            return None
+        a_to_b = b.name in self._mat[a.name]
+        b_to_a = a.name in self._mat[b.name]
+        match (a_to_b, b_to_a):
+            case (False, False):
+                print(
+                    f"WARNING: {a.name} and {b.name} are not comparable via resistance. Defaulting to seed comparison."
+                )
+                return b.seed / (a.seed + b.seed)
+            case (False, _):
+                print(
+                    f"INFO: No paths sampled for {a.name} -> {b.name}. Assuming {b.name} wins 99%"
+                )
+                return 0.01
+            case (_, False):
+                print(
+                    f"INFO: No paths sampled for {b.name} -> {a.name}. Assuming {a.name} wins 99%"
+                )
+                return 0.99
+
+        R_AB = self._mat[a.name][b.name]
+        R_BA = self._mat[b.name][a.name]
 
         return R_BA / (R_AB + R_BA)

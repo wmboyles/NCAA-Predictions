@@ -45,6 +45,8 @@ class Tournament:
     A Tournament is a binary tree of GameResults.
     This allows us to cleanly represent any single-elimination tournament structure,
     including conference tournaments where teams have byes.
+
+    TODO: Extend `round_winners` to get the probability of each team winning that round, regardless of the probability of making it to that round.
     """
 
     matchup: tuple["Tournament", "Tournament"] | GameResult
