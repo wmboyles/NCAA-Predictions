@@ -9,10 +9,15 @@ def make_bracket(tournament: Tournament, comparator: TeamComparator, **kwargs):
 
     kwargs:
         filename: Name of the file to write the LaTeX code to.
+            Defaults to the name of the comparator class.
         title: Title of the bracket.
+            Defaults to the name of the comparator class.
         whitespace_buffer: Amount of whitespace to leave around the bracket.
+            Defaults to 1.
         entry_width: Horizontal width of each entry in the bracket.
+            Defaults to 4.5.
         title_height: Height of the title of the bracket.
+            Defaults to 2.
 
     TODO: Separate out comparator and drawing logic by using a BracketDrawer class.
     TODO: Add table below giving each team's chances of making it to each round.
