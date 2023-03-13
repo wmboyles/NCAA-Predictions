@@ -31,7 +31,7 @@ def make_bracket(tournament: Tournament, comparator: TeamComparator, **kwargs):
         "filename": f"{comparator_class_name}.tex",
         "title": f"{comparator_class_name} Bracket",
         "whitespace_buffer": 1,
-        "entry_width": 3.5,
+        "entry_width": 4.5,
         "title_height": 2,
     }
     default_kwargs.update(kwargs)
