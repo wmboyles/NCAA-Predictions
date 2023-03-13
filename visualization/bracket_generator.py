@@ -68,7 +68,7 @@ def make_bracket(tournament: Tournament, comparator: TeamComparator, **kwargs):
                 "\\begin{tikzpicture}\n",
                 # Draw bounding rectangle and title
                 f"\t\draw {-whitespace_buffer,-whitespace_buffer} rectangle {bounding_x,bounding_y};\n",
-                f"\t\\node at {bracket_x/2,total_height-title_height-0.5} {{\Huge \\underline{{{title}}}}};\n",
+                f"\t\\node at {bracket_x/2,total_height-title_height-0.5} {{\\fontsize{{50}}{{60}}\\selectfont \\underline{{{title}}}}};\n",
             ]
         )
 
@@ -122,7 +122,7 @@ def make_bracket(tournament: Tournament, comparator: TeamComparator, **kwargs):
 
         file.writelines(
             [
-                f"\t\draw[thick] ({(bracket_x - winner_stetch*entry_width)/2},{winner_y}) to node[above]{{\Large \\bf {{({winning_team.seed}) {winning_team.name}}}}} ({(bracket_x + winner_stetch*entry_width)/2},{winner_y});\n"
+                f"\t\draw[thick] ({(bracket_x - winner_stetch*entry_width)/2},{winner_y}) to node[above]{{\Huge \\bf {{({winning_team.seed}) {winning_team.name}}}}} ({(bracket_x + winner_stetch*entry_width)/2},{winner_y});\n"
                 "\\end{tikzpicture}\n",
                 "\\end{document}\n",
             ]
