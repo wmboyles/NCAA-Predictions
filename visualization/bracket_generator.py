@@ -15,6 +15,7 @@ def make_bracket(tournament: Tournament, comparator: TeamComparator, **kwargs):
         title_height: Height of the title of the bracket.
 
     TODO: Separate out comparator and drawing logic by using a BracketDrawer class.
+    TODO: Add table below giving each team's chances of making it to each round.
     """
 
     game_tourney = tournament
@@ -30,7 +31,7 @@ def make_bracket(tournament: Tournament, comparator: TeamComparator, **kwargs):
         "filename": f"{comparator_class_name}.tex",
         "title": f"{comparator_class_name} Bracket",
         "whitespace_buffer": 1,
-        "entry_width": 4,
+        "entry_width": 3.5,
         "title_height": 2,
     }
     default_kwargs.update(kwargs)
@@ -68,6 +69,7 @@ def make_bracket(tournament: Tournament, comparator: TeamComparator, **kwargs):
 
         for depth in range(total_depth):
             teams_remaining = len(game_tourney)
+            print("-" * 20 + f"Round of {teams_remaining}" + "-" * 20)
 
             # Coordinates for connecting look like: power_of_2*i + yp
             # These give the yp for adjacent teams and the average yp for drawing next level line
@@ -115,7 +117,7 @@ def make_bracket(tournament: Tournament, comparator: TeamComparator, **kwargs):
 
         file.writelines(
             [
-                f"\t\draw[thick] ({(bracket_x - winner_stetch*entry_width)/2},{winner_y}) to node[above]{{\Large \\bf {{{f'({winning_team.seed}) ' + winning_team.name}}}}} ({(bracket_x + winner_stetch*entry_width)/2},{winner_y});\n"
+                f"\t\draw[thick] ({(bracket_x - winner_stetch*entry_width)/2},{winner_y}) to node[above]{{\Large \\bf {{({winning_team.seed}) {winning_team.name}}}}} ({(bracket_x + winner_stetch*entry_width)/2},{winner_y});\n"
                 "\\end{tikzpicture}\n",
                 "\\end{document}\n",
             ]
