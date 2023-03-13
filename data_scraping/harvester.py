@@ -17,22 +17,22 @@ The format of the teams file should be a .txt file with one team per line.
 These team names should match those in the URLs on SportsReference.com;
 however, dashes between words in school names are optional.
 Some examples of things SportsReference does their URLs:
-    *   All names are in lower case.
-    *   Schools called "University of [state]" are just called [state].
-            University of North Carolina --> north carolina
-            Univeristy of California --> california
-    *   Acronyms and other abbreviations teams are (usually) extended.
-        The most notable exception are schools with long names.
-            NC State --> north carolina state
-            UC Davis --> california davis
-            Indiana University Purdue University Fort Wayne --> ipfw
-            New Jersey Institute of Technology --> njit
-    *   The characters &, ', ., (, and ) are removed.
-            William & Mary --> william mary
-            St. Johns (NY) --> st johns ny
-    *   The offical names from schools are prefered to common nicknames.
-            Old Miss --> mississippi
-            Mizzou --> missouri
+* All names are in lower case.
+* Schools called "University of [state]" are just called [state].
+        * University of North Carolina --> north carolina
+        * Univeristy of California --> california
+* Acronyms and other abbreviations teams are (usually) extended.
+  The most notable exception are schools with long names.
+        * NC State --> north carolina state
+        * UC Davis --> california davis
+        * Indiana University Purdue University Fort Wayne --> ipfw
+        * New Jersey Institute of Technology --> njit
+* The characters &, ', ., (, and ) are removed.
+        * William & Mary --> william mary
+        * St. Johns (NY) --> st johns ny
+* The offical names from schools are prefered to common nicknames.
+        * Old Miss --> mississippi
+        * Mizzou --> missouri
 """
 
 from . import scraper, cleaner
@@ -50,7 +50,7 @@ def harvest(year, teams_file="./teams/teams.txt"):
     the execution.
     The program will not print any error message if a team is "missing"
 
-    For all 350+ D1 teams, this process takes about 2.5 minutes, with more than 95%
+    For all 350+ D1 teams, this process takes about 55 minutes, with more than 99%
     of that time coming from the web-scraping part. If this function seems to be
     taking much longer on the scraping part, hitting Crtl+C on the keyboard, which
     will kill a thread of execution hanging on web input, should resume the program.

@@ -11,6 +11,7 @@ import csv
 import os
 from time import sleep
 
+
 def get_team_file(fmt_team: str, year: int):
     """
     Request gamelogs from SportsReference.com given a dashed and formatted
@@ -20,21 +21,19 @@ def get_team_file(fmt_team: str, year: int):
 
     # format the url to the specific team and year
     # TODO: Women's teams?
-    # https://www.sports-reference.com/cbb/schools/iowa/men/2022-gamelogs.html
-    url = (
-        f"https://www.sports-reference.com/cbb/schools/{fmt_team}/men/{year}-gamelogs.html"
-    )
+    url = f"https://www.sports-reference.com/cbb/schools/{fmt_team}/men/{year}-gamelogs.html"
 
     # TODO: Maybe try/catch here for timeout?
     sleep(10)  # Don't spam the server
     res = requests.get(url)
     if res is None or not res.ok:  # If we don't get a good response
-        print(f"----WARNING ({res.status_code}): {fmt_team} got no/bad response from SportsReference.com")
-        # print(res.text)
+        print(
+            f"----WARNING ({res.status_code}): {fmt_team} got no/bad response from SportsReference.com"
+        )
         return
 
     soup = bs4.BeautifulSoup(res.text, features="html.parser")
-    table = soup.select_one("tbody")  # Get the first table element on the page
+    table = soup.select_one("tbody")
     if table is None:
         print(f"----WARNING: {fmt_team} doesn't have a table body.")
         return
@@ -47,7 +46,6 @@ def get_team_file(fmt_team: str, year: int):
     # headers = [str(th.text) for th in table.select("tr th")]
     with open(outfile, "w", newline="") as f:
         wr = csv.writer(f)
-        # wr.writerow(headers)
         wr.writerows(
             [[str(td.text) for td in row.find_all("td")] for row in table.select("tr")]
         )
