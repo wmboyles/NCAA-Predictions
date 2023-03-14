@@ -10,7 +10,7 @@ import os
 
 
 def resistance(
-    G: nx.DiGraph, max_paths=10_000, max_depth=10
+    G: nx.DiGraph, max_paths=100_000, max_depth=10
 ) -> dict[tuple[Team, Team], float]:
     """
     Compute the resistance between all pairs of nodes in a weighted digraph.
@@ -72,7 +72,7 @@ class ResistanceComparator(TeamComparator):
     You must limit max_paths and max_depth to complete in a reasonable amount of time.
     """
 
-    def __init__(self, year: int, max_paths: int = 10_000):
+    def __init__(self, year: int, max_paths: int = 100_000):
         super().__init__(year)
 
         if not os.path.exists(f"./predictions/{year}_resistance_rankings.p"):
