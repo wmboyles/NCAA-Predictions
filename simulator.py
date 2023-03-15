@@ -13,26 +13,9 @@ from visualization.bracket_generator import make_bracket
 # Seeds: [1, 16, 8, 9, 4, 13, 5, 12, 2, 15, 7, 10, 3, 14, 6, 11]
 tourney = Tournament.from_name_list(
     [
-        # West
-        "kansas",
-        "howard",
-        "arkansas",
-        "illinois",
-        "connecticut",
-        "iona",
-        "saint-marys-ca",
-        "virginia-commonwealth",
-        "ucla",
-        "north-carolina-asheville",
-        "northwestern",
-        "boise-state",
-        "gonzaga",
-        "grand-canyon",
-        "texas-christian",
-        "arizona-state",  # play in vs nevada
         # South
         "alabama",
-        "southeast-missouri-state",  # play in vs texas-am-corpus-christi
+        "texas-am-corpus-christi",
         "maryland",
         "west-virginia",
         "virginia",
@@ -80,7 +63,24 @@ tourney = Tournament.from_name_list(
         "xavier",
         "kennesaw-state",
         "iowa-state",
-        "pittsburgh",  # play in vs mississippi-state
+        "pittsburgh",
+        # West
+        "kansas",
+        "howard",
+        "arkansas",
+        "illinois",
+        "connecticut",
+        "iona",
+        "saint-marys-ca",
+        "virginia-commonwealth",
+        "ucla",
+        "north-carolina-asheville",
+        "northwestern",
+        "boise-state",
+        "gonzaga",
+        "grand-canyon",
+        "texas-christian",
+        "arizona-state"  # play in vs nevada
     ]
 )
 
@@ -107,5 +107,7 @@ def main(year: int, comparator_type):
 
 
 if __name__ == "__main__":
-    for comparator in COMPARATORS:
-        main(datetime.now().year, comparator)
+    from comparison.team_comparators import PathWeightComparator
+    main(datetime.now().year, PathWeightComparator)
+    # for comparator in COMPARATORS:
+    #     main(datetime.now().year, comparator)

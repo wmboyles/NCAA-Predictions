@@ -8,9 +8,11 @@ from ..game_attrs import GameValues, Team
 from .team_comparator import TeamComparator
 import os
 
+MAX_PATHS = 25_000
+
 
 def resistance(
-    G: nx.DiGraph, max_paths=100_000, max_depth=10
+    G: nx.DiGraph, max_paths=MAX_PATHS, max_depth=10
 ) -> dict[tuple[Team, Team], float]:
     """
     Compute the resistance between all pairs of nodes in a weighted digraph.
@@ -51,9 +53,7 @@ def resistance(
             for path in paths
             for (u, v) in zip(path, path[1:])
         )
-        resistances[(start, end)] = nx.resistance_distance(
-            G_pair, start, end, weight="weight", invert_weight=True
-        )
+        resistances[(start, end)] = nx.resistance_distance(G_pair, start, end, weight="weight", invert_weight=True)
 
     return resistances
 
@@ -72,7 +72,7 @@ class ResistanceComparator(TeamComparator):
     You must limit max_paths and max_depth to complete in a reasonable amount of time.
     """
 
-    def __init__(self, year: int, max_paths: int = 100_000):
+    def __init__(self, year: int, max_paths: int = MAX_PATHS):
         super().__init__(year)
 
         if not os.path.exists(f"./predictions/{year}_resistance_rankings.p"):

@@ -103,6 +103,7 @@ def make_bracket(tournament: Tournament, comparator: TeamComparator, **kwargs):
                     )
 
                 # Draw lines for next level
+                # TODO: This can create a weird outcome where a previously eliminated team is predicted to win
                 round_winners = game_tourney.round_winners()
                 left_team = round_winners[teams_remaining // 2 - i - 1]
                 right_team = round_winners[teams_remaining - i - 1]
