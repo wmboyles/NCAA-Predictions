@@ -16,12 +16,12 @@ class TeamComparator(ABC):
 
     1. Initialization of the comparator can only require the current year as input.
        All other parameters must be optional.
-    2. Implement the `compare_teams` method, which takes two teams, A and B, 
+    2. Implement the `compare_teams` method, which takes two teams, A and B,
        and returns the probability of A beating B.
     """
 
-    def __init__(self, year: int):
-        print(f"--- Initializing {self.__class__.__name__} for {year} ---")
+    def __init__(self, year: int, gender: str):
+        print(f"--- Initializing {self.__class__.__name__} {gender} for {year} ---")
 
     @abstractmethod
     def compare_teams(self, teamA: Team, teamB: Team) -> float:
@@ -32,30 +32,30 @@ class TeamComparator(ABC):
         ...
 
     @classmethod
-    def get_total_summary(cls, year: int) -> list:
+    def get_total_summary(cls, year: int, gender: str) -> list:
         """
         Helper method for all team comparators to get the total summary of a year.
         """
 
         try:
             total_summary = pickle.load(
-                open(f"./summaries/{year}/total_summary.p", "rb")
+                open(f"./summaries/{gender}/{year}/total_summary.p", "rb")
             )
         except FileNotFoundError:
             print(
-                f"--- WARNING: No summary found for {year}. Trying to create summary..."
+                f"--- WARNING: No summary found for {gender} {year}. Trying to create summary..."
             )
 
             try:
-                data_scraping.harvest(year)
+                data_scraping.harvest(year, gender)
             except:
-                print(f"--- ERROR: Could not make summary for {year}.")
+                print(f"--- ERROR: Could not make summary for {gender} {year}.")
                 return
 
-            print(f"--- SUCCESS: Summary created for {year}")
+            print(f"--- SUCCESS: Summary created for {gender} {year}")
             print("--- Trying again with newly created summary")
 
-            return cls.get_total_summary(year)
+            return cls.get_total_summary(year, gender)
 
         return total_summary
 
@@ -70,11 +70,11 @@ class TeamComparator(ABC):
 
     @classmethod
     def serialize_results(
-        cls, year: int, model_name: str, rankings: dict, vec: np.ndarray
+        cls, year: int, model_name: str, rankings: dict, vec: np.ndarray, gender: str
     ):
         # Make the year folder
-        outfile1 = f"./predictions/{year}_{model_name}_rankings.p"
-        outfile2 = f"./predictions/{year}_{model_name}_vector.p"
+        outfile1 = f"./predictions/{gender}/{year}_{model_name}_rankings.p"
+        outfile2 = f"./predictions/{gender}/{year}_{model_name}_vector.p"
         os.makedirs(os.path.dirname(outfile1), exist_ok=True)
 
         if rankings is not None:

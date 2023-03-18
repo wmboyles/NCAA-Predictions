@@ -11,13 +11,13 @@ class SeedComparator(TeamComparator):
     The lower seeded team will always have better odds of winning.
     """
 
-    def __init__(self, stdev=None, year=0):
+    def __init__(self, year, gender: str, stdev=None):
         """
         Create seed comparator with optional standard deviation.
         If no standard deviation is provided, the default of sqrt(68/3) (i.e. the standard deviation of [1,2,...,16]) is used.
         """
 
-        super().__init__(year)
+        super().__init__(year, gender)
 
         self.stdev = stdev
         if stdev is None:

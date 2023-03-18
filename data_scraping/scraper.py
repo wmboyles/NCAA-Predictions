@@ -12,16 +12,22 @@ import os
 from time import sleep
 
 
-def get_team_file(fmt_team: str, year: int):
+def get_team_file(fmt_team: str, year: int, gender: str):
     """
     Request gamelogs from SportsReference.com given a dashed and formatted
     school name as described in get_team_files. Writes the information in the
     gamelog table to a .csv file saved under the team's name.
     """
 
+    outfile = f"./games/{gender}/{year}/{fmt_team}_games.csv"
+
+    if os.path.exists(outfile):
+        print(f"Found gamelogs for {fmt_team} {gender} {year}.")
+        return
+
     # format the url to the specific team and year
     # TODO: Women's teams?
-    url = f"https://www.sports-reference.com/cbb/schools/{fmt_team}/men/{year}-gamelogs.html"
+    url = f"https://www.sports-reference.com/cbb/schools/{fmt_team}/{gender}/{year}-gamelogs.html"
 
     # TODO: Maybe try/catch here for timeout?
     sleep(10)  # Don't spam the server
@@ -35,11 +41,10 @@ def get_team_file(fmt_team: str, year: int):
     soup = bs4.BeautifulSoup(res.text, features="html.parser")
     table = soup.select_one("tbody")
     if table is None:
-        print(f"----WARNING: {fmt_team} doesn't have a table body.")
+        print(f"----WARNING: {fmt_team} {gender} {year} doesn't have a table body.")
         return
 
     # Make the year folder
-    outfile = f"./games/{year}/{fmt_team}_games.csv"
     os.makedirs(os.path.dirname(outfile), exist_ok=True)
 
     # Get the table headers and other content and write it to a .csv file
@@ -51,7 +56,7 @@ def get_team_file(fmt_team: str, year: int):
         )
 
 
-def get_team_files(year: int, teams_file: str = "./teams/teams.txt"):
+def get_team_files(year: int, gender: str, teams_file: str = "./teams/teams.txt"):
     """
     Requests gamelogs for every team listed in a given team file for a given year.
     Writes the gamelog table to a file in the games folder corresponding to the team's name.
@@ -60,5 +65,5 @@ def get_team_files(year: int, teams_file: str = "./teams/teams.txt"):
     with open(teams_file, "r") as teams:
         for team in teams:
             fmt_team = "-".join(team[:-1].split(" "))  # format team name to match url
-            print(f"Scraping {fmt_team} {year}")
-            get_team_file(fmt_team, year)
+            print(f"Scraping {fmt_team} {gender} {year}")
+            get_team_file(fmt_team, year, gender)

@@ -38,7 +38,7 @@ Some examples of things SportsReference does their URLs:
 from . import scraper, cleaner
 
 
-def harvest(year, teams_file="./teams/teams.txt"):
+def harvest(year: int,  gender: str, teams_file: str = "./teams/teams.txt"):
     """
     Scrapes, cleans, and serializes data given a list of properly-formatted
     teams in a given file for a given year.
@@ -58,10 +58,10 @@ def harvest(year, teams_file="./teams/teams.txt"):
     """
 
     print("Scraping gamelogs")
-    scraper.get_team_files(year, teams_file)
+    scraper.get_team_files(year, gender, teams_file)
 
     print("Summarizing gamelogs")
-    cleaner.summarize_team_files(year, teams_file)
+    cleaner.summarize_team_files(year, gender, teams_file)
 
     print("Combining gamelogs")
-    cleaner.combine_summaries(year, teams_file)
+    cleaner.combine_summaries(year, gender, teams_file)

@@ -14,7 +14,9 @@ class PageRankComparator(TeamComparator):
     See https://en.wikipedia.org/wiki/PageRank
     """
 
-    def __init__(self, year: int, iters: int = 10_000, alpha: float = 0.85):
+    def __init__(
+        self, year: int, gender: str, iters: int = 10_000, alpha: float = 0.85
+    ):
         """
         Args:
             year:
@@ -31,14 +33,23 @@ class PageRankComparator(TeamComparator):
                 perform. The default of iters=10_000, about 30x the number of
                 Division I teams, is generally sufficient for ranking.
         """
-        super().__init__(year)
+        super().__init__(year, gender)
 
-        if not os.path.exists(f"./predictions/{year}_pagerank_rankings.p"):
-            self.__rank(year, iters, alpha, serialize_results=True, first_year=True)
+        if not os.path.exists(f"./predictions/{gender}/{year}_pagerank_rankings.p"):
+            self.__rank(
+                year, gender, iters, alpha, serialize_results=True, first_year=True
+            )
 
-        self.__build_model(year)
+        self.__build_model(year, gender)
 
-    def __rank(self, year: int, iters: int, alpha: float, **kwargs: dict[str, bool]):
+    def __rank(
+        self,
+        year: int,
+        gender: str,
+        iters: int,
+        alpha: float,
+        **kwargs: dict[str, bool],
+    ):
         """
         Uses PageRank to create a vector ranking all teams.
 
@@ -48,7 +59,7 @@ class PageRankComparator(TeamComparator):
                 Otherwise, all teams start ranked equally.
         """
 
-        total_summary = TeamComparator.get_total_summary(year)
+        total_summary = TeamComparator.get_total_summary(year, gender)
         teams = TeamComparator.get_teams(total_summary)
         num_teams = len(teams)
 
@@ -56,7 +67,7 @@ class PageRankComparator(TeamComparator):
         if kwargs.get("first_year"):
             vec = np.ones((num_teams, 1))
         else:
-            vec = self.__rank(year - 1, iters, alpha - 0.1, first_year=True)
+            vec = self.__rank(year - 1, gender, iters, alpha - 0.1, first_year=True)
 
         num_teams = max(num_teams, len(vec))
         mat = np.zeros((num_teams, num_teams))
@@ -125,16 +136,16 @@ class PageRankComparator(TeamComparator):
         for pair in sorted_pairs:
             rankings[pair[1]] = pair[0]
 
-        TeamComparator.serialize_results(year, "pagerank", rankings, vec)
+        TeamComparator.serialize_results(year, "pagerank", rankings, vec, gender)
 
         return vec
 
-    def __build_model(self, year: int):
+    def __build_model(self, year: int, gender: str):
         self._rankings = pickle.load(
-            open(f"./predictions/{year}_pagerank_rankings.p", "rb")
+            open(f"./predictions/{gender}/{year}_pagerank_rankings.p", "rb")
         )
 
-        vec = pickle.load(open(f"./predictions/{year}_pagerank_vector.p", "rb"))
+        vec = pickle.load(open(f"./predictions/{gender}/{year}_pagerank_vector.p", "rb"))
         self._df = chi2.fit(vec)[0]
         self._min_vec, self._max_vec = min(vec)[0], max(vec)[0]
 

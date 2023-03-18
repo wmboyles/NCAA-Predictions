@@ -11,12 +11,12 @@ class BradleyTerryComparator(TeamComparator):
     See https://en.wikipedia.org/wiki/Bradley%E2%80%93Terry_model
     """
 
-    def __init__(self, year: int, iters: int = 1):
-        super().__init__(year)
-        self.__rank(year, iters)
-        self.__build_model(year)
+    def __init__(self, year: int, gender: str, iters: int = 1):
+        super().__init__(year, gender)
+        self.__rank(year, gender, iters)
+        self.__build_model(year, gender)
 
-    def __rank(self, year: int, iters: int, **kwargs: dict[str, bool]):
+    def __rank(self, year: int, gender: str, iters: int, **kwargs: dict[str, bool]):
         """
         Uses Bradley-Terry model to create a vector ranking all teams.
 
@@ -26,7 +26,7 @@ class BradleyTerryComparator(TeamComparator):
             Otherwise, all teams start ranked equally.
         """
 
-        total_summary = TeamComparator.get_total_summary(year)
+        total_summary = TeamComparator.get_total_summary(year, gender)
         teams = TeamComparator.get_teams(total_summary)
         num_teams = len(teams)
 
@@ -46,10 +46,10 @@ class BradleyTerryComparator(TeamComparator):
 
         vec = np.ones((num_teams, 1)) / num_teams
         if not kwargs.get("first_year"):
-            self.__rank(year - 1, iters, first_year=True)
+            self.__rank(year - 1, gender, iters, first_year=True)
 
             prev_year_rankings: dict = pickle.load(
-                open(f"./predictions/{year-1}_bradleyterry_rankings.p", "rb")
+                open(f"./predictions/{gender}/{year-1}_bradleyterry_rankings.p", "rb")
             )
 
             for team, value in prev_year_rankings.items():
@@ -87,11 +87,11 @@ class BradleyTerryComparator(TeamComparator):
         for item in sorted_pairs:
             rankings[item[1]] = item[0]
 
-        TeamComparator.serialize_results(year, "bradleyterry", rankings, vec)
+        TeamComparator.serialize_results(year, "bradleyterry", rankings, vec, gender)
 
-    def __build_model(self, year: int):
+    def __build_model(self, year: int, gender: str):
         self._rankings = pickle.load(
-            open(f"./predictions/{year}_bradleyterry_rankings.p", "rb")
+            open(f"./predictions/{gender}/{year}_bradleyterry_rankings.p", "rb")
         )
 
     def compare_teams(self, a: Team, b: Team) -> float:

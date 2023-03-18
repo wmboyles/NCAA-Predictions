@@ -9,14 +9,14 @@ import pickle
 import os
 
 
-def summarize_team_file(year: int, dashed_team_name: str) -> list | None:
+def summarize_team_file(year: int, gender: str, dashed_team_name: str) -> list | None:
     """
     Summarizes a team's performance from a .csv file into just a list of the team's opponent and game score for each game.
     This list is then returned.
     """
 
     try:
-        team_year_file = f"./games/{year}/{dashed_team_name}_games.csv"
+        team_year_file = f"./games/{gender}/{year}/{dashed_team_name}_games.csv"
         with open(team_year_file, "r", newline="") as in_csv:
             reader = csv.reader(in_csv)
 
@@ -226,7 +226,7 @@ def summarize_team_file(year: int, dashed_team_name: str) -> list | None:
                     new_rows.append(new_row)
                 except ValueError:
                     print(
-                        f"--- WARNING: {dashed_team_name} {opponent} {year} missing values"
+                        f"--- WARNING: {dashed_team_name} vs. {opponent} {year} missing values"
                     )
                     continue
 
@@ -235,7 +235,11 @@ def summarize_team_file(year: int, dashed_team_name: str) -> list | None:
         print(f"--- WARNING: {dashed_team_name} games not found.")
 
 
-def summarize_team_files(year: int, teamFile: str = "../teams/teams.txt"):
+def summarize_team_files(
+    year: int,
+    gender: str,
+    teamFile: str = "../teams/teams.txt",
+):
     """
     Summarizes all teams in a given file listing teams.
     The list returned from the summarize_team_file method is serialized into a .p file corresponding to the team's name in the summaries folder.
@@ -247,19 +251,19 @@ def summarize_team_files(year: int, teamFile: str = "../teams/teams.txt"):
             fmt_team = "-".join(team[:-1].split(" "))
             print(f"Summarizing {fmt_team} {year}")
 
-            summary = summarize_team_file(year, fmt_team)
+            summary = summarize_team_file(year, gender, fmt_team)
             if summary is None or len(summary) == 0:
                 print(f"----WARNING: {fmt_team} does not have a game summary.")
                 continue
 
             # Make the year folder
-            outfile = f"./summaries/{year}/{fmt_team}_summary.p"
+            outfile = f"./summaries/{gender}/{year}/{fmt_team}_summary.p"
             os.makedirs(os.path.dirname(outfile), exist_ok=True)
 
             pickle.dump(summary, open(outfile, "wb"))
 
 
-def combine_summaries(year: int, teamFile: str = "../teams/teams.txt"):
+def combine_summaries(year: int, gender: str, teamFile: str = "../teams/teams.txt"):
     """
     Combines all summary files into a large summary to be read by the ranker program.
     """
@@ -273,7 +277,7 @@ def combine_summaries(year: int, teamFile: str = "../teams/teams.txt"):
 
             try:
                 team_summary = pickle.load(
-                    open(f"./summaries/{year}/{fmt_team}_summary.p", "rb")
+                    open(f"./summaries/{gender}/{year}/{fmt_team}_summary.p", "rb")
                 )
 
                 for summary_entry in team_summary:
@@ -283,4 +287,4 @@ def combine_summaries(year: int, teamFile: str = "../teams/teams.txt"):
                 print(f"----WARNING: {fmt_team} does not have a summary file")
                 continue
 
-    pickle.dump(big_summary, open(f"./summaries/{year}/total_summary.p", "wb"))
+    pickle.dump(big_summary, open(f"./summaries/{gender}/{year}/total_summary.p", "wb"))

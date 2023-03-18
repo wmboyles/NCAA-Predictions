@@ -46,16 +46,16 @@ class PathWeightComparator(TeamComparator):
                      = shortest_path_weight(B -> A) / (shortest_path_weight(A -> B) + shortest_path_weight(B -> A))
     """
 
-    def __init__(self, year: int):
-        super().__init__(year)
+    def __init__(self, year: int, gender: setattr):
+        super().__init__(year, gender)
 
-        if not os.path.exists(f"./predictions/{year}_path_weights_rankings.p"):
-            self.__rank(year)
+        if not os.path.exists(f"./predictions/{gender}/{year}_path_weights_rankings.p"):
+            self.__rank(year, gender)
 
-        self.__build_model(year)
+        self.__build_model(year, gender)
 
-    def __rank(self, year: int):
-        total_summary = TeamComparator.get_total_summary(year)
+    def __rank(self, year: int, gender: str):
+        total_summary = TeamComparator.get_total_summary(year, gender)
         teams = TeamComparator.get_teams(total_summary)
 
         # Construct a graph with vertices of all possible teams
@@ -82,11 +82,11 @@ class PathWeightComparator(TeamComparator):
         # We can efficiently use Dijsktra's here b/c the graph is sparse w/ |E| = O(|V|)
         min_pairs = {start: dijkstra(G, start) for start in G.nodes}
 
-        TeamComparator.serialize_results(year, "path_weights", min_pairs, None)
+        TeamComparator.serialize_results(year, "path_weights", min_pairs, None, gender)
 
-    def __build_model(self, year: int):
+    def __build_model(self, year: int, gender: str):
         self._mat = pickle.load(
-            open(f"./predictions/{year}_path_weights_rankings.p", "rb")
+            open(f"./predictions/{gender}/{year}_path_weights_rankings.p", "rb")
         )
 
     def compare_teams(self, a: Team, b: Team) -> float:

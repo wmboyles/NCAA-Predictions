@@ -53,7 +53,9 @@ def resistance(
             for path in paths
             for (u, v) in zip(path, path[1:])
         )
-        resistances[(start, end)] = nx.resistance_distance(G_pair, start, end, weight="weight", invert_weight=True)
+        resistances[(start, end)] = nx.resistance_distance(
+            G_pair, start, end, weight="weight", invert_weight=True
+        )
 
     return resistances
 
@@ -75,16 +77,16 @@ class ResistanceComparator(TeamComparator):
     compute the resistance on this sampled subgraph.
     """
 
-    def __init__(self, year: int, max_paths: int = MAX_PATHS):
-        super().__init__(year)
+    def __init__(self, year: int, gender: str, max_paths: int = MAX_PATHS):
+        super().__init__(year, gender)
 
-        if not os.path.exists(f"./predictions/{year}_resistance_rankings.p"):
-            self.__rank(year, max_paths)
+        if not os.path.exists(f"./predictions/{gender}/{year}_resistance_rankings.p"):
+            self.__rank(year, gender, max_paths)
 
-        self.__build_model(year)
+        self.__build_model(year, gender)
 
-    def __rank(self, year: int, max_paths: int):
-        total_summary = TeamComparator.get_total_summary(year)
+    def __rank(self, year: int, gender: str, max_paths: int):
+        total_summary = TeamComparator.get_total_summary(year, gender)
         teams = TeamComparator.get_teams(total_summary)
 
         # Construct a graph with vertices of all possible teams
@@ -108,11 +110,11 @@ class ResistanceComparator(TeamComparator):
         for (start, end), ohms in resistance(G, max_paths).items():
             resistances[start][end] = ohms
 
-        TeamComparator.serialize_results(year, "resistance", resistances, None)
+        TeamComparator.serialize_results(year, "resistance", resistances, None, gender)
 
-    def __build_model(self, year: int):
+    def __build_model(self, year: int, gender: str):
         self._mat = pickle.load(
-            open(f"./predictions/{year}_resistance_rankings.p", "rb")
+            open(f"./predictions/{gender}/{year}_resistance_rankings.p", "rb")
         )
 
     def compare_teams(self, a: Team, b: Team) -> float:

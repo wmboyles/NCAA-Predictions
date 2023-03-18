@@ -11,12 +11,12 @@ class EloComparator(TeamComparator):
     See https://en.wikipedia.org/wiki/Elo_rating_system
     """
 
-    def __init__(self, year: int):
-        super().__init__(year)
-        self.__rank(year)
-        self.__build_model(year)
+    def __init__(self, year: int, gender: str):
+        super().__init__(year, gender)
+        self.__rank(year, gender)
+        self.__build_model(year, gender)
 
-    def __rank(self, year: int, **kwargs: dict[str, bool | int]):
+    def __rank(self, year: int, gender: str, **kwargs: dict[str, bool | int]):
         """
         Uses Elo model to create a vector ranking all teams.
 
@@ -29,7 +29,7 @@ class EloComparator(TeamComparator):
             The default is 1750.
         """
 
-        total_summary = TeamComparator.get_total_summary(year)
+        total_summary = TeamComparator.get_total_summary(year, gender)
         teams = TeamComparator.get_teams(total_summary)
         num_teams = len(teams)
 
@@ -38,10 +38,10 @@ class EloComparator(TeamComparator):
 
         # Decide whether to look back or not
         if not kwargs.get("first_year"):
-            self.__rank(year - 1, first_year=True)
+            self.__rank(year - 1, gender, first_year=True)
 
             prev_year_ratings: dict = pickle.load(
-                open(f"./predictions/{year-1}_elo_rankings.p", "rb")
+                open(f"./predictions/{gender}/{year-1}_elo_rankings.p", "rb")
             )
 
             for team, value in prev_year_ratings.items():
@@ -81,11 +81,11 @@ class EloComparator(TeamComparator):
         for item in sorted_pairs:
             rankings[item[1]] = item[0]
 
-        TeamComparator.serialize_results(year, "elo", rankings, ratings)
+        TeamComparator.serialize_results(year, "elo", rankings, ratings, gender)
 
-    def __build_model(self, year: int):
-        self._rankings = pickle.load(open(f"./predictions/{year}_elo_rankings.p", "rb"))
-        self._vec = pickle.load(open(f"./predictions/{year}_elo_vector.p", "rb"))
+    def __build_model(self, year: int, gender: str):
+        self._rankings = pickle.load(open(f"./predictions/{gender}/{year}_elo_rankings.p", "rb"))
+        self._vec = pickle.load(open(f"./predictions/{gender}/{year}_elo_vector.p", "rb"))
 
     def compare_teams(self, a: Team, b: Team) -> float:
         qA = 10 ** (self._rankings[a.name] / 400)
