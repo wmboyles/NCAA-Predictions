@@ -36,13 +36,14 @@ def dijkstra(graph: nx.DiGraph, start) -> dict:
 
 class PathWeightComparator(TeamComparator):
     """
-    Implements a comparison method I made up. Here is how it operates:
+    Implements a comparison method I made up.
+    Here's how it works:
 
     1. Construct a graph with vertices of all possible teams.
     2. If A beats B n times, then add an edge between A and B with weight 1/n**2. Do this for all games
     3. Compute the shortest weighted path between all teams.
-    4. Pr(A beats B)    = (1 - shortest_path_weight(A -> B)) / (shortest_path_weight(A -> B) + shortest_path_weight(B -> A))
-                        = shortest_path_weight(B -> A) / (shortest_path_weight(A -> B) + shortest_path_weight(B -> A))
+    4. Pr(A beats B) = (1 - shortest_path_weight(A -> B)) / (shortest_path_weight(A -> B) + shortest_path_weight(B -> A))
+                     = shortest_path_weight(B -> A) / (shortest_path_weight(A -> B) + shortest_path_weight(B -> A))
     """
 
     def __init__(self, year: int):

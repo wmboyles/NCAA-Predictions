@@ -60,16 +60,19 @@ def resistance(
 
 class ResistanceComparator(TeamComparator):
     """
-    Implements a comparison method I made up. Here is how it operates:
+    Implements a comparison method I made up.
+    Here's how it works:
 
     1. Construct a graph with vertices of all possible teams.
-    2. If A beats B n times, then add a directed edge between A and B with resistance 1/n. Do this for all games
-    3. Compute the resistance for all pairs of teams.
+    2. Each time A beats B, add a "directed resistor" (i.e. current can only from from A to B) with resistance 1.
+       * Equivalently, if A beats B n times, add a directed resistor with resistance 1/n.
+    3. Compute the resistance between all pairs of teams.
     4. Pr(A beats B) = (1 - resistance(A -> B)) / (resistance(A -> B) + resistance(B -> A))
                      = resistance(B -> A) / (resistance(A -> B) + resistance(B -> A))
 
-    NOTE: This method is extremely slow on even moderately sized graphs.
-    You must limit max_paths and max_depth to complete in a reasonable amount of time.
+    NOTE: Unless there's some trick to computing resistances of these directed resistors that I'm not aware of,
+    actually computing the resistance would take too long. So instead, we sample a bunch of paths from A to B and
+    compute the resistance on this sampled subgraph.
     """
 
     def __init__(self, year: int, max_paths: int = MAX_PATHS):

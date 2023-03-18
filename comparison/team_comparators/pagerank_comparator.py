@@ -11,21 +11,26 @@ from ..game_attrs import GameValues, GameWeights, Team
 class PageRankComparator(TeamComparator):
     """
     Ranks all Division I NCAA Basketball teams in a given year using PageRank.
+    See https://en.wikipedia.org/wiki/PageRank
+    """
 
-    PARAMETERS
-    year -->    The year that the NCAA championship game takes place.
+    def __init__(self, year: int, iters: int = 10_000, alpha: float = 0.85):
+        """
+        Args:
+            year:
+                The year that the NCAA championship game takes place.
                 The 2019-2020 season would correpond to year=2020.
-    alpha -->   A value between 0 and 1 that is a measure of randomness in
+            alpha:
+                A value between 0 and 1 that is a measure of randomness in
                 PageRank meant to model the possibility that a user randomly
                 navigates to a page without using a link. alpha=1 would be
                 completely deterministic, while alpha=0 would be completely
                 random. Google is rumored to use alpha=.85.
-    iters -->   The number of iterations of PageRank matrix multiplication to
-                perform. The default of iters=3500, about 10x the number of
+            iters:
+                The number of iterations of PageRank matrix multiplication to
+                perform. The default of iters=10_000, about 30x the number of
                 Division I teams, is generally sufficient for ranking.
-    """
-
-    def __init__(self, year: int, iters: int = 10000, alpha: float = 0.85):
+        """
         super().__init__(year)
 
         if not os.path.exists(f"./predictions/{year}_pagerank_rankings.p"):
@@ -37,10 +42,10 @@ class PageRankComparator(TeamComparator):
         """
         Uses PageRank to create a vector ranking all teams.
 
-        KWARGS
-        first_year: bool
-            If False, then the previous year's rankings will be used initially.
-            Otherwise, all teams start ranked equally.
+        Kwargs:
+            first_year: bool
+                If False, then the previous year's rankings will be used initially.
+                Otherwise, all teams start ranked equally.
         """
 
         total_summary = TeamComparator.get_total_summary(year)

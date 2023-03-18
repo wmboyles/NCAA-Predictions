@@ -1,8 +1,3 @@
-"""
-This module contians the Tournament class, which represents teams in a single-elimination tournament.
-It uses a TeamComparator to simulate rounds of the tournament and make predictions.
-"""
-
 from typing import Iterator
 
 from .team_comparators.team_comparator import TeamComparator

@@ -1,9 +1,3 @@
-"""
-This module contains the TeamComparator abstract base class and its concrete subclasses.
-These subclasses compare two teams and give an expected probability of a team winning.
-"""
-
-
 import os
 import pickle
 import numpy as np
@@ -17,6 +11,13 @@ class TeamComparator(ABC):
     """
     Interface for comparing two teams based on some ranking.
     Implementing classes can determine what the ranking is based on.
+
+    The only requirements for a comparator model are:
+
+    1. Initialization of the comparator can only require the current year as input.
+       All other parameters must be optional.
+    2. Implement the `compare_teams` method, which takes two teams, A and B, 
+       and returns the probability of A beating B.
     """
 
     def __init__(self, year: int):
