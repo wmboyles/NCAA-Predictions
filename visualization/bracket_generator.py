@@ -1,5 +1,8 @@
 from math import log2
-from comparison import Tournament, TeamComparator
+from functools import reduce
+from collections import defaultdict
+
+from comparison import Tournament, TeamComparator, Team
 
 
 def make_bracket(tournament: Tournament, comparator: TeamComparator, **kwargs):
@@ -20,7 +23,6 @@ def make_bracket(tournament: Tournament, comparator: TeamComparator, **kwargs):
             Defaults to 2.
 
     TODO: Separate out comparator and drawing logic by using a BracketDrawer class.
-    TODO: Add table below giving each team's chances of making it to each round.
     """
 
     game_tourney = tournament
@@ -58,11 +60,17 @@ def make_bracket(tournament: Tournament, comparator: TeamComparator, **kwargs):
     bracket_x = bounding_x - whitespace_buffer
     bracket_y = bounding_y
 
+    # Play successive tournament rounds until there is 1 winner
+    rounds = [game_tourney]
+    while len(rounds[-1]) > 1:
+        rounds.append(rounds[-1].play_round(comparator=comparator))
+
     with open(filename, "w") as file:
         file.writelines(
             [
                 # Start tikz document
                 "\\documentclass[tikz]{standalone}\n\n",
+                "\\usepackage{longtable}\n",
                 "\\usetikzlibrary{positioning}\n\n",
                 "\\begin{document}\n",
                 "\\begin{tikzpicture}\n",
@@ -72,8 +80,8 @@ def make_bracket(tournament: Tournament, comparator: TeamComparator, **kwargs):
             ]
         )
 
-        for depth in range(total_depth):
-            teams_remaining = len(game_tourney)
+        for depth, round in enumerate(rounds):
+            teams_remaining = len(round)
             print("-" * 20 + f"Round of {teams_remaining}" + "-" * 20)
 
             # Coordinates for connecting look like: power_of_2*i + yp
@@ -104,7 +112,7 @@ def make_bracket(tournament: Tournament, comparator: TeamComparator, **kwargs):
 
                 # Draw lines for next level
                 # TODO: This can create a weird outcome where a previously eliminated team is predicted to win
-                round_winners = game_tourney.round_winners()
+                round_winners = round.round_winners()
                 left_team = round_winners[teams_remaining // 2 - i - 1]
                 right_team = round_winners[teams_remaining - i - 1]
                 file.writelines(
@@ -114,17 +122,66 @@ def make_bracket(tournament: Tournament, comparator: TeamComparator, **kwargs):
                     ]
                 )
 
-            game_tourney = game_tourney.play_round(comparator)
-
         # Draw line for winner and end document
         winner_y = y_mid + 2 * whitespace_buffer
         winner_stetch = 1.5
-        winning_team = game_tourney.round_winners()[0]
-
+        winning_team = round.round_winners()[0]
         file.writelines(
             [
                 f"\t\draw[thick] ({(bracket_x - winner_stetch*entry_width)/2},{winner_y}) to node[above]{{\Huge \\bf {{({winning_team.seed}) {winning_team.name}}}}} ({(bracket_x + winner_stetch*entry_width)/2},{winner_y});\n"
-                "\\end{tikzpicture}\n",
-                "\\end{document}\n",
+                "\\end{tikzpicture}\n"
+            ]
+        )
+
+        # ----- Table -----
+        file.writelines([
+            "\Huge\n",
+            "\\newpage\n",
+            "\\begin{longtable}{| l ||" + " c |"*(total_depth+1) + "}\n",
+            "\hline\n"
+        ])
+
+        table_header = "\\textbf{Team/Chances} "
+        round_size = num_teams
+        while round_size > 0:
+            table_header += f"& \\textbf{{Round of {round_size}}}"
+            round_size //= 2
+        table_header += " \\\\\n"
+        file.writelines([table_header, "\hline\hline\n"])
+
+        # As list of list of GameResults. This might be easier for filling the bracket
+        # TODO: Use this to fill bracket
+        results = [round._leaves() for round in rounds]
+        # As list of dict[Team,float], mapping Team to chances of making it to current round
+        results2 = [
+            reduce(lambda acc, r: acc | r.probabilities, leaves, dict[Team, float]())
+            for leaves in results
+        ]
+        out = defaultdict[Team,list[float]](list)
+        for r2 in results2:
+            for t,p in r2.items():
+                out[t].append(p)
+        out = sorted(out.items(), key = lambda e: -e[1][-1])
+
+        for i,(team,prs) in enumerate(out):
+            line = f"\\textbf{{({team.seed}) {team.name}}} "
+            for pr in prs:
+                line += f"& {100*pr:0.3f}\% "
+            line += "\\\\ \\hline\n"
+            file.write(line)
+
+            # Break table onto multiple pages if needed
+            if (i+1) % 32 == 0 and (i+1) != num_teams:
+                file.writelines([
+                    "\pagebreak\n",
+                    "\hline\n",
+                    table_header, 
+                    "\hline\hline\n"
+                ])
+
+        file.writelines(
+            [
+            "\\end{longtable}\n",
+            "\\end{document}\n",
             ]
         )

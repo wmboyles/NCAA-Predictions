@@ -186,5 +186,5 @@ if __name__ == "__main__":
 
     year = datetime.now().year
     gender = "women"
-    elo = EloComparator(year, gender)
-    main(tourney_women, year, gender, elo)
+    comp = PageRankComparator(year, gender)
+    main(tourney_women, year, gender, comp)
