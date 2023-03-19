@@ -1,8 +1,9 @@
 # NCAA Predictions
 
-This project scrapes NCAA Division I college basketball game data, uses various prediction algorithms to compare different teams, and produces a filled-in bracket.
+This project scrapes NCAA Division I college basketball game data, uses various prediction algorithms to compare different teams, and produces a filled-in bracket with table of probabilities.
 
 ![example-bracket](./docs/example_bracket.png)
+![example-table](./docs/example_table.png)
 
 The current algorithms are:
 
@@ -31,5 +32,5 @@ I recommend [MiKTeX](https://miktex.org/).
 You can find the list of teams in `teams/teams.txt`.
 3. Modify the final lines of `simulator.py` to include whichever comparators you'd like.
 4. Run with `python simulator.py`.
-After running, the result(s) will be .pdf and .tex file(s) in `predictions/viz/`.
+After running, the result(s) will be .pdf and .tex file(s) in `predictions/`.
 The PDF(s) should open for viewing automatically.
