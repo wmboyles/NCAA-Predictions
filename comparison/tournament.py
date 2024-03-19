@@ -224,7 +224,17 @@ class Tournament:
         if isinstance(left.matchup, GameResult) and isinstance(
             right.matchup, GameResult
         ):
+            left_winner = max(left.matchup.probabilities, key=left.matchup.probabilities.get)
+            right_winner = max(right.matchup.probabilities, key=right.matchup.probabilities.get)
+
             matchup_result = self._round(left.matchup, right.matchup, comparator)
+            matchup_winner = max(matchup_result.probabilities, key=matchup_result.probabilities.get)
+            matchup_loser = left_winner if matchup_winner == right_winner else right_winner
+
+            is_upset = matchup_winner.seed > matchup_loser.seed
+
+            print(f"{matchup_winner.name} beats {matchup_loser.name}{" (upset)" if is_upset else ""}")
+
             return Tournament(matchup_result)
 
         return Tournament((left.play_round(comparator), right.play_round(comparator)))
