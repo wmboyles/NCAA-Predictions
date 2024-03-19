@@ -14,73 +14,41 @@ from visualization.bracket_generator import make_bracket
 tourney_men = Tournament.from_name_list(
     [
         # South
-        "alabama",
-        "texas-am-corpus-christi",
-        "maryland",
-        "west-virginia",
-        "virginia",
-        "furman",
-        "san-diego-state",
-        "college-of-charleston",
-        "arizona",
-        "princeton",
-        "missouri",
-        "utah-state",
-        "baylor",
-        "california-santa-barbara",
-        "creighton",
+        "houston",
+        "longwood",
+        "nebraska",
+        "texas-am",
+        "duke",
+        "vermont",
+        "wisconsin",
+        "james-madison",
+        "marquette",
+        "western-kentucky",
+        "florida",
+        "boise-state", # play-in vs colorado
+        "kentucky",
+        "oakland",
+        "texas-tech",
         "north-carolina-state",
         # East
-        "purdue",
-        "fairleigh-dickinson",  # play in vs texas-southern
-        "memphis",
-        "florida-atlantic",
-        "tennessee",
-        "louisiana-lafayette",
-        "duke",
-        "oral-roberts",
-        "marquette",
-        "vermont",
-        "michigan-state",
-        "southern-california",
-        "kansas-state",
-        "montana-state",
-        "kentucky",
-        "providence",
-        # Midwest
-        "houston",
-        "northern-kentucky",
-        "iowa",
-        "auburn",
-        "indiana",
-        "kent-state",
-        "miami-fl",
-        "drake",
-        "texas",
-        "colgate",
-        "texas-am",
-        "penn-state",
-        "xavier",
-        "kennesaw-state",
-        "iowa-state",
-        "pittsburgh",
-        # West
-        "kansas",
-        "howard",
-        "arkansas",
-        "illinois",
         "connecticut",
-        "iona",
-        "saint-marys-ca",
-        "virginia-commonwealth",
-        "ucla",
-        "north-carolina-asheville",
+        "stetson",
+        "florida-atlantic",
         "northwestern",
-        "boise-state",
-        "gonzaga",
-        "grand-canyon",
-        "texas-christian",
-        "arizona-state",  # play in vs nevada
+        "auburn",
+        "yale",
+        "san-diego-state",
+        "alabama-birmingham",
+        "iowa-state",
+        "south-dakota-state",
+        "washington-state",
+        "drake",
+        "illinois",
+        "morehead-state",
+        "brigham-young",
+        "duquesne",
+        # Midwest
+        # West
     ]
 )
 
@@ -157,6 +125,7 @@ tourney_women = Tournament.from_name_list(
     ]
 )
 
+tourney_dict: dict[str, Tournament] = {"men": tourney_men, "womem": tourney_women}
 
 def main(tourney: Tournament, year: int, gender: str, comparator: TeamComparator):
     comparator_name = comparator.__class__.__name__
@@ -172,7 +141,7 @@ def main(tourney: Tournament, year: int, gender: str, comparator: TeamComparator
     )
 
     system(f"xelatex {full_filename} -interaction batchmode")
-
+    system(f"md predictions")
     for extension in ["log", "aux"]:
         system(f"del {filename}.{extension}")
     for extension in ["tex", "pdf"]:
@@ -185,6 +154,7 @@ if __name__ == "__main__":
     from comparison.team_comparators import *
 
     year = datetime.now().year
-    gender = "women"
-    comp = PageRankComparator(year, gender)
-    main(tourney_women, year, gender, comp)
+    gender = "men"
+    comp = SeedComparator(year, gender)
+    tourney = tourney_dict[gender]
+    main(tourney, year, gender, comp)

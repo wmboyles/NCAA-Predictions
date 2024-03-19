@@ -171,7 +171,7 @@ def make_bracket(tournament: Tournament, comparator: TeamComparator, **kwargs):
             file.write(line)
 
             # Break table onto multiple pages if needed
-            if (i+1) % 32 == 0 and (i+1) != num_teams:
+            if (i+1) % (num_teams // 2) == 0 and (i+1) != num_teams:
                 file.writelines([
                     "\pagebreak\n",
                     "\hline\n",
