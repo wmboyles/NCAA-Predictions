@@ -45,7 +45,10 @@ class EloComparator(TeamComparator):
             )
 
             for team, value in prev_year_ratings.items():
-                ratings[teams.index(team)] = value
+                try:
+                    ratings[teams.index(team)] = value
+                except ValueError:  # Team was not in the previous year's data (new to Division I)
+                    pass
 
         for game in total_summary:
             # We only want to count games where both teams are D1 (in teams list)
