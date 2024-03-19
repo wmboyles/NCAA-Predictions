@@ -16,7 +16,7 @@ class BradleyTerryComparator(TeamComparator):
         self.__rank(year, gender, iters)
         self.__build_model(year, gender)
 
-    def __rank(self, year: int, gender: str, iters: int, **kwargs: dict[str, bool]):
+    def __rank(self, year: int, gender: str, iters: int, **kwargs):
         """
         Uses Bradley-Terry model to create a vector ranking all teams.
 
@@ -53,7 +53,10 @@ class BradleyTerryComparator(TeamComparator):
             )
 
             for team, value in prev_year_rankings.items():
-                vec[teams.index(team)] = value
+                try:
+                    vec[teams.index(team)] = value
+                except ValueError: # Team was not in the previous year's data (new to Division I)
+                    pass
         vec /= sum(vec)
 
         # Perform iterations of Bradley-Terry process
