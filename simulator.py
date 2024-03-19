@@ -48,7 +48,39 @@ tourney_men = Tournament.from_name_list(
         "brigham-young",
         "duquesne",
         # Midwest
+        "purdue",
+        "montana-state", # play-in vs grambling
+        "utah-state",
+        "texas-christian",
+        "kansas",
+        "samford",
+        "gonzaga",
+        "mcneese-state",
+        "tennessee",
+        "saint-peters",
+        "texas",
+        "virginia", # play-in vs colorado-state
+        "creighton",
+        "akron",
+        "south-carolina",
+        "oregon",
         # West
+        "north-carolina",
+        "howard", # play-in vs wagner
+        "mississippi-state",
+        "michigan-state",
+        "alabama",
+        "college-of-charleston",
+        "saint-marys-ca",
+        "grand-canyon",
+        "arizona",
+        "long-beach-state",
+        "dayton",
+        "nevada",
+        "baylor",
+        "colgate",
+        "clemson",
+        "new-mexico"
     ]
 )
 
@@ -125,7 +157,7 @@ tourney_women = Tournament.from_name_list(
     ]
 )
 
-tourney_dict: dict[str, Tournament] = {"men": tourney_men, "womem": tourney_women}
+tourney_dict: dict[str, Tournament] = {"men": tourney_men, "women": tourney_women}
 
 def main(tourney: Tournament, year: int, gender: str, comparator: TeamComparator):
     comparator_name = comparator.__class__.__name__
@@ -155,6 +187,6 @@ if __name__ == "__main__":
 
     year = datetime.now().year
     gender = "men"
-    comp = SeedComparator(year, gender)
+    comp = BradleyTerryComparator(year, gender)
     tourney = tourney_dict[gender]
     main(tourney, year, gender, comp)
