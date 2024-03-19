@@ -46,7 +46,7 @@ class PathWeightComparator(TeamComparator):
                      = shortest_path_weight(B -> A) / (shortest_path_weight(A -> B) + shortest_path_weight(B -> A))
     """
 
-    def __init__(self, year: int, gender: setattr):
+    def __init__(self, year: int, gender: str):
         super().__init__(year, gender)
 
         if not os.path.exists(f"./predictions/{gender}/{year}_path_weights_rankings.p"):

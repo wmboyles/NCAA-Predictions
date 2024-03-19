@@ -49,8 +49,7 @@ class TeamComparator(ABC):
             try:
                 data_scraping.harvest(year, gender)
             except:
-                print(f"--- ERROR: Could not make summary for {gender} {year}.")
-                return
+                raise Exception(f"--- ERROR: Could not make summary for {gender} {year}.")
 
             print(f"--- SUCCESS: Summary created for {gender} {year}")
             print("--- Trying again with newly created summary")
@@ -70,7 +69,12 @@ class TeamComparator(ABC):
 
     @classmethod
     def serialize_results(
-        cls, year: int, model_name: str, rankings: dict, vec: np.ndarray, gender: str
+        cls,
+        year: int,
+        model_name: str,
+        rankings: dict,
+        vec: np.ndarray | None,
+        gender: str,
     ):
         # Make the year folder
         outfile1 = f"./predictions/{gender}/{year}_{model_name}_rankings.p"
