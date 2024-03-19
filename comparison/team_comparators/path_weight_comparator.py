@@ -1,7 +1,7 @@
 import pickle
 from math import inf
 import networkx as nx
-from pqdict import minpq
+from pqdict import pqdict
 import os
 
 from ..game_attrs import GameValues, Team
@@ -16,7 +16,7 @@ def dijkstra(graph: nx.DiGraph, start) -> dict:
     # Distances contains known shortest distances from start to key nodes.
     distances = dict()
     # Assign all nodes a priority of infinity, except the start node
-    pq = minpq()
+    pq = pqdict.minpq()
     for node in graph.nodes:
         pq[node] = inf
     pq[start] = 0
