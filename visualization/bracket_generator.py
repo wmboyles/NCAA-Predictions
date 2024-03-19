@@ -94,6 +94,7 @@ def make_bracket(tournament: Tournament, comparator: TeamComparator, **kwargs):
             x_left = depth * entry_width
             x_right = bracket_x - depth * entry_width
 
+            round_winners = round.round_winners()
             for i in range(teams_remaining // 2):
                 # Y coordinates
                 y_bottom = 2**depth * i + yp_bottom
@@ -112,7 +113,6 @@ def make_bracket(tournament: Tournament, comparator: TeamComparator, **kwargs):
 
                 # Draw lines for next level
                 # TODO: This can create a weird outcome where a previously eliminated team is predicted to win
-                round_winners = round.round_winners()
                 left_team = round_winners[teams_remaining // 2 - i - 1]
                 right_team = round_winners[teams_remaining - i - 1]
                 file.writelines(
