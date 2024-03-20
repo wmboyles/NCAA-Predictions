@@ -16,7 +16,7 @@ class EloComparator(TeamComparator):
         self.__rank(year, gender)
         self.__build_model(year, gender)
 
-    def __rank(self, year: int, gender: str, **kwargs: dict[str, bool | int]):
+    def __rank(self, year: int, gender: str, **kwargs):
         """
         Uses Elo model to create a vector ranking all teams.
 
