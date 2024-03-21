@@ -1,5 +1,5 @@
 import pickle
-from math import inf
+from math import inf, isnan, isinf
 import networkx as nx
 from pqdict import pqdict
 import os
@@ -95,5 +95,9 @@ class PathWeightComparator(TeamComparator):
 
         sp_AB = self._mat[a.name][b.name]
         sp_BA = self._mat[b.name][a.name]
+
+        if isinf(sp_AB) or isinf(sp_BA):
+            print(f"Warning: No path between {a.name} and {b.name}. Defaulting to seed comparison.")
+            return b.seed / (a.seed + b.seed)
 
         return sp_BA / (sp_AB + sp_BA)
