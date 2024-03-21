@@ -117,6 +117,8 @@ def summarize_team_file(year: int, gender: str, dashed_team_name: str) -> list |
                         opponent = "saint josephs"
                     case "central connecticut":
                         opponent = "central connecticut state"
+                    case "uab":
+                        opponent = "alabama birmingham"
                     case "utsa":
                         opponent = "texas san antonio"
                     case "unc greensboro":
