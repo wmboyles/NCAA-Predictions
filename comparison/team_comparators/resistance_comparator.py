@@ -123,22 +123,11 @@ class ResistanceComparator(TeamComparator):
 
         a_to_b = b.name in self._mat[a.name]
         b_to_a = a.name in self._mat[b.name]
-        match (a_to_b, b_to_a):
-            case (False, False):
-                print(
-                    f"WARNING: {a.name} and {b.name} are not comparable via resistance. Defaulting to seed comparison."
-                )
-                return b.seed / (a.seed + b.seed)
-            case (False, _):
-                print(
-                    f"INFO: No paths sampled for {a.name} -> {b.name}. Assuming {b.name} wins 99%"
-                )
-                return 0.01
-            case (_, False):
-                print(
-                    f"INFO: No paths sampled for {b.name} -> {a.name}. Assuming {a.name} wins 99%"
-                )
-                return 0.99
+        if not a_to_b or not b_to_a:
+            print(
+                f"WARNING: {a.name} and {b.name} are not comparable via resistance. Defaulting to seed comparison."
+            )
+            return b.seed / (a.seed + b.seed)
 
         R_AB = self._mat[a.name][b.name]
         R_BA = self._mat[b.name][a.name]
