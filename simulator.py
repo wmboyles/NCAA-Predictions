@@ -13,23 +13,6 @@ from visualization.bracket_generator import make_bracket
 # Seeds: [1, 16, 8, 9, 4, 13, 5, 12, 2, 15, 7, 10, 3, 14, 6, 11]
 tourney_men = Tournament.from_name_list(
     [
-        # South
-        "houston",
-        "longwood",
-        "nebraska",
-        "texas-am",
-        "duke",
-        "vermont",
-        "wisconsin",
-        "james-madison",
-        "marquette",
-        "western-kentucky",
-        "florida",
-        "boise-state", # play-in vs colorado
-        "kentucky",
-        "oakland",
-        "texas-tech",
-        "north-carolina-state",
         # East
         "connecticut",
         "stetson",
@@ -47,26 +30,9 @@ tourney_men = Tournament.from_name_list(
         "morehead-state",
         "brigham-young",
         "duquesne",
-        # Midwest
-        "purdue",
-        "montana-state", # play-in vs grambling
-        "utah-state",
-        "texas-christian",
-        "kansas",
-        "samford",
-        "gonzaga",
-        "mcneese-state",
-        "tennessee",
-        "saint-peters",
-        "texas",
-        "virginia", # play-in vs colorado-state
-        "creighton",
-        "akron",
-        "south-carolina",
-        "oregon",
         # West
         "north-carolina",
-        "howard", # play-in vs wagner
+        "wagner",
         "mississippi-state",
         "michigan-state",
         "alabama",
@@ -80,7 +46,41 @@ tourney_men = Tournament.from_name_list(
         "baylor",
         "colgate",
         "clemson",
-        "new-mexico"
+        "new-mexico",
+        # South
+        "houston",
+        "longwood",
+        "nebraska",
+        "texas-am",
+        "duke",
+        "vermont",
+        "wisconsin",
+        "james-madison",
+        "marquette",
+        "western-kentucky",
+        "florida",
+        "boise-state", # play-in vs colorado
+        "kentucky",
+        "oakland",
+        "texas-tech",
+        "north-carolina-state",
+        # Midwest
+        "purdue",
+        "montana-state", # play-in vs grambling
+        "utah-state",
+        "texas-christian",
+        "kansas",
+        "samford",
+        "gonzaga",
+        "mcneese-state",
+        "tennessee",
+        "saint-peters",
+        "texas",
+        "colorado-state",
+        "creighton",
+        "akron",
+        "south-carolina",
+        "oregon",
     ]
 )
 
@@ -187,6 +187,6 @@ if __name__ == "__main__":
 
     year = datetime.now().year
     gender = "men"
-    comp = BradleyTerryComparator(year, gender)
+    comp = PathWeightComparator(year, gender)
     tourney = tourney_dict[gender]
     main(tourney, year, gender, comp)
