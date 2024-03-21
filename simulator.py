@@ -66,7 +66,7 @@ tourney_men = Tournament.from_name_list(
         "north-carolina-state",
         # Midwest
         "purdue",
-        "montana-state", # play-in vs grambling
+        "grambling",
         "utah-state",
         "texas-christian",
         "kansas",
@@ -187,6 +187,6 @@ if __name__ == "__main__":
 
     year = datetime.now().year
     gender = "men"
-    comp = PathWeightComparator(year, gender)
+    comp = ResistanceComparator(year, gender, max_paths=100_000)
     tourney = tourney_dict[gender]
     main(tourney, year, gender, comp)
