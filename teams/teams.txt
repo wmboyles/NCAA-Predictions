@@ -224,6 +224,7 @@ cal state northridge
 california davis
 california riverside
 cal poly
+california-san-diego
 liberty
 lipscomb
 north florida
