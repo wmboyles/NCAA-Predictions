@@ -24,10 +24,10 @@ class TeamComparator(ABC):
         print(f"--- Initializing {self.__class__.__name__} {gender} for {year} ---")
 
     @abstractmethod
-    def compare_teams(self, teamA: Team, teamB: Team) -> float:
+    def compare_teams(self, a: Team, b: Team) -> float:
         """
         Compare two teams based on some ranking.
-        Return a float between 0 and 1 representing the probability that teamA wins.
+        Return a float between 0 and 1 representing the probability that a wins.
         """
         ...
 
@@ -96,9 +96,9 @@ class HydridComparator(TeamComparator):
     def __init__(self, *comparators: TeamComparator):
         self.comparators = comparators
 
-    def compare_teams(self, teamA: Team, teamB: Team) -> float:
+    def compare_teams(self, a: Team, b: Team) -> float:
         confs = [
-            comparator.compare_teams(teamA, teamB) for comparator in self.comparators
+            comparator.compare_teams(a, b) for comparator in self.comparators
         ]
         min_conf, max_conf = min(confs), max(confs)
 

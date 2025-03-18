@@ -8,6 +8,7 @@ import csv
 import pickle
 import os
 
+TEAM_NAME_REMOVE_CHARS = frozenset([".", "&", "(", ")", "'"])
 
 def summarize_team_file(year: int, gender: str, dashed_team_name: str) -> list | None:
     """
@@ -35,8 +36,8 @@ def summarize_team_file(year: int, gender: str, dashed_team_name: str) -> list |
                 The team filename is meant to match the school URL on SportsReference.
                 """
 
-                opponent = row[2].lower()
-                for char in [".", "&", "(", ")", "'"]:
+                opponent = row[3].lower()
+                for char in TEAM_NAME_REMOVE_CHARS:
                     opponent = opponent.replace(char, "")
                 opponent = opponent.replace("-", " ")
 
@@ -152,76 +153,74 @@ def summarize_team_file(year: int, gender: str, dashed_team_name: str) -> list |
                 ORB% = ORB / (ORB + OppDRB)
                 FTR = FT / FGA
                 
-                A = dashed_team_name,   B = opponent
-                W/L = "W" in row[3]
-                A_score = row[4],       B_score = row[5]
-                A_FG = row[6],          B_FG = row[23]
-                A_FGA = row[7],         B_FGA = row[24] 
-                A_3P = row[9],          B_3P = row[26]
-                A_TOV = row[20],        B_TOV = row[37]
-                A_FTA = row[13],        B_FTA = row[30]
-                A_ORB = row[15],        B_ORB = row[32]
-                A_FT = row[12],         B_FT = row[29]
+                    game number = row[0]
+                    date = row[1]
+                    location = row[2] (blank for home, @ for away, N for neutral)
+                A = dashed_team_name,   B = opponent (row[3])
+                    type = row[4] (REG, conf/non-conf)
+                    W/L = "W" in row[5]
+                A_score = row[6],       B_score = row[7]
+                    overtime = Value (OT etc.) in row[8]
+                A_FG = row[9],          B_FG = row[30]
+                A_FGA = row[10],        B_FGA = row[31] 
+                A_FG% = row[11],        B_FG% = row[32]
+                A_3P = row[12],         B_3P = row[33]
+                A_3PA = row[13],        B_3PA = row[34]
+                A_3P% = row[14],        B_3P% = row[35]
+                A_2P = row[15],         B_2P = row[36]
+                A_2PA = row[16],        B_2PA = row[37]
+                A_2P% = row[17],        B_2P% = row[38]
+                A_eFG% = row[18],       B_eFG% = row[39]
+                A_FT = row[19],         B_FT = row[40]
+                A_FTA = row[20],        B_FTA = row[41]
+                A_FT% = row[21],        B_FT% = row[42]
+                A_ORB = row[22],        B_ORB = row[43]
+                A_DRB = row[23],        B_DRB = row[44]
+                A_TRB = row[24],        B_TRB = row[45]
+                A_AST = row[25],        B_AST = row[46]
+                A_STL = row[26],        B_STL = row[47]
+                A_BLK = row[27],        B_BLK = row[48]
+                A_TOV = row[28],        B_TOV = row[49]
+                A_PF = row[29],         A_PF = row[50]
+
+                NOTE: After 2025, the SportsReference table schema changed
                 """
 
                 A, B = dashed_team_name, opponent
-                WL = "W" in row[3]
+                WL = "W" in row[5]
+                A_TO_B = 21 # A_stat = row[i], B_stat = row[i+A_TO_B]
                 try:
-                    A_score, B_score = int(row[4]), int(row[5])
-                    A_FG, B_FG = int(row[6]), int(row[23])
-                    A_FGA, B_FGA = int(row[7]), int(row[24])
-                    A_3P, B_3P = int(row[9]), int(row[26])
-                    A_TOV, B_TOV = int(row[20]), int(row[37])
-                    A_FTA, B_FTA = int(row[13]), int(row[30])
-                    A_ORB, B_ORB = int(row[15]), int(row[32])
-                    A_FT, B_FT = int(row[12]), int(row[29])
+                    A_SCORE, A_SCORE = int(row[6]), int(row[7])
+                    A_FGA, B_FGA = int(row[10]), int(row[10+A_TO_B])
+                    A_EFGP, B_EFGP = float(row[18]), float(row[18+A_TO_B])
+                    A_FT, B_FT = int(row[19]), int(row[19+A_TO_B])
+                    A_FTA, B_FTA = int(row[20]), int(row[20+A_TO_B])
+                    A_ORB, B_ORB = int(row[22]), int(row[22+A_TO_B])
+                    A_DRB, B_DRB = int(row[23]), int(row[23+A_TO_B])
+                    A_TOV, B_TOV = int(row[28]), int(row[29+A_TO_B])
 
-                    if A_FGA == 0:
-                        A_eFGp = 0
-                    else:
-                        A_eFGp = (A_FG + 0.5 * A_3P) / A_FGA
-                    if B_FGA == 0:
-                        B_eFGp = 0
-                    else:
-                        B_eFGp = (B_FG + 0.5 * B_3P) / B_FGA
+                    
+                    A_TOVP = A_TOV / max(A_FGA + 0.44 * A_FTA + A_TOV, 1.0)
+                    B_TOVP = B_TOV / max(B_FGA + 0.44 * B_FTA + B_TOV, 1.0)
 
-                    if A_FGA == 0 and A_FTA == 0 and A_TOV == 0:
-                        A_TOVp = 0
-                    else:
-                        A_TOVp = A_TOV / (A_FGA + 0.44 * A_FTA + A_TOV)
-                    if B_FGA == 0 and B_FTA == 0 and B_TOV == 0:
-                        B_TOVp = 0
-                    else:
-                        B_TOVp = B_TOV / (B_FGA + 0.44 * B_FTA + B_TOV)
+                    A_ORBP = A_ORB / max(A_ORB + B_DRB, 1)
+                    B_ORBP = B_ORB / max(B_ORB + A_DRB, 1)
 
-                    if A_ORB == 0 and B_ORB == 0:
-                        A_ORBp, B_ORBp = 0, 0
-                    else:
-                        A_ORBp, B_ORBp = A_ORB / (A_ORB + B_ORB), B_ORB / (
-                            A_ORB + B_ORB
-                        )
-
-                    if A_FTA == 0:
-                        A_FTR = 0
-                    else:
-                        A_FTR = A_FT / A_FGA
-                    if B_FTA == 0:
-                        B_FTR = 0
-                    else:
-                        B_FTR = B_FT / B_FGA
+                    A_FTR = A_FT / max(A_FGA, 1)
+                    B_FTR = B_FT / max(B_FGA, 1)
 
                     new_row = [
                         A,
                         B,
                         WL,
-                        A_score,
-                        B_score,
-                        A_eFGp,
-                        B_eFGp,
-                        A_TOVp,
-                        B_TOVp,
-                        A_ORBp,
-                        B_ORBp,
+                        A_SCORE,
+                        A_SCORE,
+                        A_EFGP,
+                        B_EFGP,
+                        A_TOVP,
+                        B_TOVP,
+                        A_ORBP,
+                        B_ORBP,
                         A_FTR,
                         B_FTR,
                     ]
