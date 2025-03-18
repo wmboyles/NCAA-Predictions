@@ -7,157 +7,82 @@ from os import system
 from datetime import datetime
 
 from comparison import Tournament
-from comparison.team_comparators import TeamComparator, COMPARATORS
+from comparison.team_comparators import TeamComparator
 from visualization.bracket_generator import make_bracket
 
 # Seeds: [1, 16, 8, 9, 4, 13, 5, 12, 2, 15, 7, 10, 3, 14, 6, 11]
-tourney_men = Tournament.from_name_list(
-    [
-        # East
-        "connecticut",
-        "stetson",
-        "florida-atlantic",
-        "northwestern",
-        "auburn",
-        "yale",
-        "san-diego-state",
-        "alabama-birmingham",
-        "iowa-state",
-        "south-dakota-state",
-        "washington-state",
-        "drake",
-        "illinois",
-        "morehead-state",
-        "brigham-young",
-        "duquesne",
-        # West
-        "north-carolina",
-        "wagner",
-        "mississippi-state",
-        "michigan-state",
-        "alabama",
-        "college-of-charleston",
-        "saint-marys-ca",
-        "grand-canyon",
-        "arizona",
-        "long-beach-state",
-        "dayton",
-        "nevada",
-        "baylor",
-        "colgate",
-        "clemson",
-        "new-mexico",
-        # South
-        "houston",
-        "longwood",
-        "nebraska",
-        "texas-am",
-        "duke",
-        "vermont",
-        "wisconsin",
-        "james-madison",
-        "marquette",
-        "western-kentucky",
-        "florida",
-        "boise-state", # play-in vs colorado
-        "kentucky",
-        "oakland",
-        "texas-tech",
-        "north-carolina-state",
-        # Midwest
-        "purdue",
-        "grambling",
-        "utah-state",
-        "texas-christian",
-        "kansas",
-        "samford",
-        "gonzaga",
-        "mcneese-state",
-        "tennessee",
-        "saint-peters",
-        "texas",
-        "colorado-state",
-        "creighton",
-        "akron",
-        "south-carolina",
-        "oregon",
-    ]
-)
+tourney_men = Tournament.from_name_list([
+    # South
+    "auburn",
+    "alabama", # or Saint Francis
+    "louisville",
+    "creighton",
+    "texas-am",
+    "yale",
+    "michigan",
+    "california-san-diego", # TODO: UC San Diego
+    "michigan-state",
+    "bryant",
+    "marquette",
+    "new-mexico",
+    "iowa-state",
+    "lipscomb",
+    "ole-miss",
+    "san-diego-state", # or North Carolina
+    # West
+    "florida",
+    "norfolk-state",
+    "connecticut",
+    "oklahoma",
+    "maryland",
+    "grand-canyon",
+    "memphis",
+    "colorado-state",
+    "st-johns-ny",
+    "omaha",
+    "kansas",
+    "arkansas",
+    "texas-tech",
+    "north-carolina-wilmington",
+    "missouri",
+    "drake",
+    # East
+    "duke",
+    "american", # or mount st marys
+    "mississippi-state",
+    "baylor",
+    "arizona",
+    "akron",
+    "oregon",
+    "liberty",
+    "alabama",
+    "robert-morris",
+    "saint-marys-ca",
+    "vanderbilt",
+    "wisconsin",
+    "montana",
+    "brigham-young",
+    "virgina-commonwealth",
+    # Midwest        
+    "houston",
+    "southern-ilinois-edwardsville",
+    "gonzaga",
+    "georgia",
+    "purdue",
+    "high-point",
+    "clemson",
+    "mcnessee-state",
+    "tennessee",
+    "wofford",
+    "ucla",
+    "utah-state",
+    "kentucky",
+    "troy",
+    "texas", # or xavier
+    "illinois"
+])
 
-tourney_women = Tournament.from_name_list(
-    [
-        # Greenville 1
-        "south-carolina",
-        "norfolk-state",
-        "south-florida",
-        "marquette",
-        "ucla",
-        "sacramento-state",
-        "oklahoma",
-        "portland",
-        "maryland",
-        "holy-cross",
-        "arizona",
-        "west-virginia",
-        "notre-dame",
-        "southern-utah",
-        "creighton",
-        "mississippi-state",
-        # Seattle 4
-        "stanford",
-        "sacred-heart",
-        "mississippi",
-        "gonzaga",
-        "texas",
-        "east-carolina",
-        "louisville",
-        "drake",
-        "iowa",
-        "southeastern-louisiana",
-        "florida-state",
-        "georgia",
-        "duke",
-        "iona",
-        "colorado",
-        "middle-tennessee",
-        # Greenville 2
-        "indiana",
-        "tennessee-tech",
-        "oklahoma-state",
-        "miami-fl",
-        "villanova",
-        "cleveland-state",
-        "washington-state",
-        "florida-gulf-coast",
-        "utah",
-        "gardner-webb",
-        "north-carolina-state",
-        "princeton",
-        "louisiana-lafayette",
-        "hawaii",
-        "michigan",
-        "nevada-las-vegas",
-        # Seattle 3
-        "virginia-tech",
-        "chattanooga",
-        "southern-california",
-        "south-dakota-state",
-        "tennessee",
-        "saint-louis",
-        "iowa-state",
-        "toledo",
-        "connecticut",
-        "vermont",
-        "baylor",
-        "alabama",
-        "ohio-state",
-        "james-madison",
-        "north-carolina",
-        "st-johns-ny"
-    ]
-)
-
-tourney_dict: dict[str, Tournament] = {"men": tourney_men, "women": tourney_women}
+tourney_dict: dict[str, Tournament] = {"men": tourney_men}
 
 def main(tourney: Tournament, year: int, gender: str, comparator: TeamComparator):
     comparator_name = comparator.__class__.__name__
@@ -187,6 +112,6 @@ if __name__ == "__main__":
 
     year = datetime.now().year
     gender = "men"
-    comp = ResistanceComparator(year, gender, max_paths=100_000)
+    comp = SeedComparator(year, gender)
     tourney = tourney_dict[gender]
     main(tourney, year, gender, comp)
