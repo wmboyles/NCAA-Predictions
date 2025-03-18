@@ -32,6 +32,7 @@ def get_team_file(fmt_team: str, year: int, gender: str):
     # TODO: Maybe try/catch here for timeout?
     sleep(10)  # Don't spam the server
     res = requests.get(url)
+    res.encoding = res.apparent_encoding
     if res is None or not res.ok:  # If we don't get a good response
         print(
             f"----WARNING ({res.status_code}): {fmt_team} got no/bad response from SportsReference.com"
@@ -49,7 +50,7 @@ def get_team_file(fmt_team: str, year: int, gender: str):
 
     # Get the table headers and other content and write it to a .csv file
     # headers = [str(th.text) for th in table.select("tr th")]
-    with open(outfile, "w", newline="") as f:
+    with open(outfile, "w", newline="", encoding=res.encoding) as f:
         wr = csv.writer(f)
         wr.writerows(
             [[str(td.text) for td in row.find_all("td")] for row in table.select("tr")]
