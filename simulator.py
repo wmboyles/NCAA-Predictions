@@ -15,7 +15,7 @@ tourney_men = Tournament.from_name_list(
     [
         # South
         "auburn",
-        "alabama",  # or Saint Francis
+        "alabama-state",  # or Saint Francis
         "louisville",
         "creighton",
         "texas-am",
@@ -28,7 +28,7 @@ tourney_men = Tournament.from_name_list(
         "new-mexico",
         "iowa-state",
         "lipscomb",
-        "ole-miss",
+        "mississippi",
         "san-diego-state",  # or North Carolina
         # West
         "florida",
@@ -40,7 +40,7 @@ tourney_men = Tournament.from_name_list(
         "memphis",
         "colorado-state",
         "st-johns-ny",
-        "omaha",
+        "nebraska-omaha",
         "kansas",
         "arkansas",
         "texas-tech",
@@ -63,16 +63,16 @@ tourney_men = Tournament.from_name_list(
         "wisconsin",
         "montana",
         "brigham-young",
-        "virgina-commonwealth",
+        "virginia-commonwealth",
         # Midwest
         "houston",
-        "southern-ilinois-edwardsville",
+        "southern-illinois-edwardsville",
         "gonzaga",
         "georgia",
         "purdue",
         "high-point",
         "clemson",
-        "mcnessee-state",
+        "mcneese-state",
         "tennessee",
         "wofford",
         "ucla",
@@ -115,6 +115,6 @@ if __name__ == "__main__":
 
     year = datetime.now().year
     gender = "men"
-    comp = EloComparator(year, gender)
+    comp = ResistanceComparator(year, gender)
     tourney = tourney_dict[gender]
     main(tourney, year, gender, comp)
