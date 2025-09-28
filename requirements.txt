@@ -3,5 +3,5 @@ bs4==0.0.2
 networkx==3.2.1
 numpy==1.26.4
 pqdict==1.4.0
-requests==2.32.2
+requests==2.32.4
 scipy==1.12.0
