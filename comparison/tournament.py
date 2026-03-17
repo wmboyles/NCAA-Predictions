@@ -133,9 +133,9 @@ class Tournament:
         num_teams = len(names)
 
         if num_teams < quadrants:
-            raise ValueError(f"Must have at least as many teams as quadrants")
+            raise ValueError(f"Must have at least as many teams as quadrants ({quadrants})")
         if num_teams & (num_teams - 1) != 0:
-            raise ValueError("Number of teams must be a power of 2")
+            raise ValueError(f"Number of teams ({num_teams}) must be a power of 2")
 
         def get_seedings(size: int) -> Iterator[int]:
             """

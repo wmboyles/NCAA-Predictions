@@ -13,6 +13,8 @@ def dijkstra(graph: nx.DiGraph, start) -> dict:
     Dijkstra's algorithm for finding the shortest path from start node in a weighted digraph.
     """
 
+    print(f"Dijkstra {start}")
+
     # Distances contains known shortest distances from start to key nodes.
     distances = dict()
     # Assign all nodes a priority of infinity, except the start node
@@ -77,6 +79,8 @@ class PathWeightComparator(TeamComparator):
         # NOTE: The squared part is just there to make the model more confident in its predictions.
         for u, v in G.edges:
             G[u][v]["weight"] = 1 / G[u][v]["weight"] ** 2
+
+        print("Built graph")
 
         # Calculate all pairs shortest paths
         # We can efficiently use Dijsktra's here b/c the graph is sparse w/ |E| = O(|V|)

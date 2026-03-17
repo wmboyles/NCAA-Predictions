@@ -21,6 +21,8 @@ def resistance(
     # Depth-first search to get a list of all paths from start to end
     # NOTE: This method is extremely slow on even moderately sized graphs
     def find_all_paths(start: Team) -> list[list[Team]]:
+        print(f"Finding all paths for {start}")
+
         stack = [(start, [start])]
         paths: list[list[Team]] = []
         while stack and len(paths) < max_paths:
@@ -37,6 +39,8 @@ def resistance(
     all_paths: list[list[Team]] = reduce(
         add, (find_all_paths(start) for start in G.nodes)
     )
+
+    print("Calculated all paths")
 
     # Group paths by start and end node
     paths_by_start_end: dict[tuple[Team, Team]] = defaultdict(list[Team])
@@ -56,6 +60,7 @@ def resistance(
         resistances[(start, end)] = nx.resistance_distance(
             G_pair, start, end, weight="weight", invert_weight=True
         )
+        print(f"Calculated resistance for ({start},{end})")
 
     return resistances
 
@@ -103,6 +108,8 @@ class ResistanceComparator(TeamComparator):
                     G[teamA][teamB]["weight"] += 1
                 else:
                     G.add_edge(teamA, teamB, weight=1)
+
+        print("Built graph")
 
         # Compute the resistance for all pairs of teams
         # NOTE: No need to invert weight, as nx.resistance_distance does this for us
