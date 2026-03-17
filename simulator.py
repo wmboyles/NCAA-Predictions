@@ -13,6 +13,23 @@ from visualization.bracket_generator import make_bracket
 # Seeds: [1, 16, 8, 9, 4, 13, 5, 12, 2, 15, 7, 10, 3, 14, 6, 11]
 tourney_men = Tournament.from_name_list(
     [
+        # East
+        "duke",
+        "siena",
+        "ohio-state",
+        "texas-christian",
+        "kansas",
+        "california-baptist",
+        "st-johns-ny",
+        "northern-iowa",
+        "connecticut",
+        "furman",
+        "ucla",
+        "central-florida",
+        "michigan-state",
+        "north-dakota-state",
+        "louisville",
+        "south-florida",
         # South
         "florida",
         "prairie-view", # or lehigh
@@ -47,23 +64,6 @@ tourney_men = Tournament.from_name_list(
         "kennesaw-state",
         "brigham-young",
         "north-carolina-state", # or texas
-        # East
-        "duke",
-        "siena",
-        "ohio-state",
-        "texas-christian",
-        "kansas",
-        "california-baptist",
-        "st-johns-ny",
-        "northern-iowa",
-        "connecticut",
-        "furman",
-        "ucla",
-        "central-florida",
-        "michigan-state",
-        "north-dakota-state",
-        "louisville",
-        "south-florida",
         # Midwest
         "michigan",
         "maryland-baltimore-county", # or howard
@@ -115,6 +115,6 @@ if __name__ == "__main__":
 
     year = datetime.now().year
     gender = "men"
-    comp = ResistanceComparator(year, gender)
+    comp = SeedComparator(year, gender)
     tourney = tourney_dict[gender]
     main(tourney, year, gender, comp)
