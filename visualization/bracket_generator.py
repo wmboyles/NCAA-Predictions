@@ -29,9 +29,9 @@ def make_bracket(tournament: Tournament, comparator: TeamComparator, **kwargs):
 
     num_teams = len(game_tourney)
     if num_teams <= 0:
-        raise ValueError("Number of teams must be a positive integer")
+        raise ValueError(f"Number of teams ({num_teams}) must be a positive integer")
     if num_teams & (num_teams - 1) != 0:
-        raise ValueError("Number of teams must be a power of 2")
+        raise ValueError(f"Number of teams ({num_teams}) must be a power of 2")
 
     comparator_class_name = comparator.__class__.__name__
     default_kwargs = {
